@@ -6,12 +6,12 @@ PS5_PAYLOAD_SDK ?= $(PS5_NATIVE_APP_TEMPLATE)/.deps/native/ps5-payload-sdk
 PS5_OPENGL_PREFIX ?= $(abspath .deps/game-sdk)
 export PS5_NATIVE_APP_TEMPLATE PS5_PAYLOAD_SDK PS5_OPENGL_PREFIX
 
-.PHONY: help deps check smoke contract test native app package ffpfsc
+.PHONY: help deps check smoke contract test native app package ffpfsc demo
 help:
 	@printf '%s\n' 'check: verify the frozen SDK, source pin and native helper bytes (offline)' \
 	  'smoke: compile/link the existing EGL/OpenGL consumer and compile native helpers (offline)' \
 	  'native: build the staged Yamagi PS5 app with static GL3/EGL and PacBrew SDL2.'
-	@printf '%s\n' 'deps: restore pinned build dependencies' 'test: run host regressions (no game data required)' 'package: build a game-data-free release ZIP'
+	@printf '%s\n' 'deps: restore pinned build dependencies' 'test: run host regressions' 'package: build a ready-to-run demo ZIP'
 	@printf '%s\n' 'ffpfsc: build the ZIP and a verified compressed FFPFSC image'
 
 deps:
@@ -45,11 +45,17 @@ app: native
 native: check contract
 	bash tools/build-ps5.sh
 
-package: native
-	python3 tools/package.py
+demo:
+	python3 tools/prepare-demo.py --download --destination .deps/demo-baseq2
+
+package: native demo
+	python3 tools/package.py --stage build/ps5-native-fixed/dist/PPSA99007
 
 ffpfsc: package
 	rm -f -- dist/PPSA99007.ffpfsc
 	@mkpfs=$$(bash "$(PS5_NATIVE_APP_TEMPLATE)/tools/setup-packaging-dependencies.sh" ffpfsc) && \
-	  "$$mkpfs" pack folder --no-adjust-output-file-extension --version PS5 --verify dist/PPSA99007 dist/PPSA99007.ffpfsc
+	  "$$mkpfs" pack folder --no-adjust-output-file-extension --version PS5 --verify dist/PPSA99007 dist/PPSA99007.ffpfsc && \
+	  "$$mkpfs" unpack --deep --overwrite --no-progress dist/PPSA99007.ffpfsc build/ffpfsc-roundtrip
+	diff -qr dist/PPSA99007 build/ffpfsc-roundtrip
+	python3 tests/check_game_data.py build/ffpfsc-roundtrip/assets/baseq2
 	cd dist && sha256sum PPSA99007.ffpfsc > PPSA99007.ffpfsc.sha256

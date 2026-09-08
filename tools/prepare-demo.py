@@ -7,6 +7,7 @@ from pathlib import Path, PurePosixPath
 import sys
 import tempfile
 import zipfile
+import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
@@ -14,18 +15,19 @@ from check_game_data import validate
 
 URL = "https://deponie.yamagi.org/quake2/idstuff/q2-314-demo-x86.exe"
 MD5 = "4d1cd4618e80a38db59304132ea0856c"
+SHA256 = "7ace5a43983f10d6bdc9d9b6e17a1032ba6223118d389bd170df89b945a04a1e"
 
 
 def prepare(archive, destination):
     content = archive.read_bytes()
-    if hashlib.md5(content).hexdigest() != MD5:
-        raise ValueError("archive does not match the upstream official-demo MD5")
+    if hashlib.sha256(content).hexdigest() != SHA256:
+        raise ValueError("archive does not match the pinned official-demo SHA-256")
     destination.mkdir(parents=True, exist_ok=True)
-    if any(path.name != "README.md" for path in destination.iterdir()):
-        raise ValueError("destination contains data; refusing to overwrite or mix game versions")
     selected = {}
     prefix = "Install/Data/baseq2/"
     with zipfile.ZipFile(archive) as source:
+        selected['DEMO-LICENSE.txt'] = source.read('license.txt')
+        selected['DEMO-README.txt'] = source.read('readme.txt')
         for info in source.infolist():
             if not info.filename.startswith(prefix) or info.is_dir():
                 continue
@@ -38,6 +40,14 @@ def prepare(archive, destination):
             selected[name] = source.read(info)
     if "pak0.pak" not in selected or hashlib.md5(selected["pak0.pak"]).hexdigest() != "27d77240466ec4f3253256832b54db8a":
         raise ValueError("demo pak0 differs from upstream hash")
+    existing = {p.relative_to(destination).as_posix(): p for p in destination.rglob('*')
+                if p.is_file() and p.name not in ('README.md', 'asset-provenance.json')}
+    if existing:
+        if set(existing) != set(selected) or any(existing[n].read_bytes() != data for n, data in selected.items()):
+            raise ValueError('destination contains different data; refusing to overwrite or mix game versions')
+        validate(destination)
+        print('PASS: existing demo files and original notices match the pinned archive')
+        return
     with tempfile.TemporaryDirectory(prefix="yamagi-demo-") as temporary:
         staged = Path(temporary)
         (staged / "pak0.pak").write_bytes(selected["pak0.pak"])
@@ -59,10 +69,20 @@ def prepare(archive, destination):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("archive", type=Path, help=f"archive downloaded from {URL}")
+    parser.add_argument("archive", type=Path, nargs='?', default=ROOT / '.deps/q2-314-demo-x86.exe', help=f"archive downloaded from {URL}")
+    parser.add_argument('--download', action='store_true', help='download the pinned archive if missing')
     parser.add_argument("--destination", type=Path, default=ROOT / "data/baseq2")
     args = parser.parse_args()
     try:
+        if args.download and not args.archive.exists():
+            args.archive.parent.mkdir(parents=True, exist_ok=True)
+            temporary = args.archive.with_suffix('.download')
+            with urllib.request.urlopen(URL, timeout=60) as response, temporary.open('wb') as output:
+                while chunk := response.read(1024 * 1024):
+                    output.write(chunk)
+            if hashlib.sha256(temporary.read_bytes()).hexdigest() != SHA256:
+                raise ValueError('download SHA-256 mismatch')
+            temporary.rename(args.archive)
         prepare(args.archive, args.destination)
     except (OSError, ValueError, zipfile.BadZipFile) as error:
         parser.exit(1, f"FAIL: demo preparation: {error}\n")

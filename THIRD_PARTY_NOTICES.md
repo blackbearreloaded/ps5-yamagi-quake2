@@ -20,7 +20,9 @@ unmodified source; apply the repository's platform patch when rebuilding.
 
 Shell artwork and selection music are project presentation assets supplied or
 commissioned by the project owner. The source MP3 and proprietary ATRAC9 encoder
-are not distributed. No original Quake II game data is bundled. Quake II and
+are not distributed. Release packages include the unchanged Quake II 3.14 demo
+assets with their original `DEMO-LICENSE.txt` and `DEMO-README.txt`. They are
+not covered by this project's GPL license. Retail game data is not bundled. Quake II and
 PlayStation names/trademarks remain the property of their respective owners.
 
 Build pins and source instructions are in `dependencies.json` and

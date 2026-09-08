@@ -121,4 +121,4 @@ printf '%s\n' \
 	'PACBREW_PACKAGES=sdl2' > "$stage/.env"
 
 make -C "$stage" --no-print-directory app
-python3 "$root/tools/package.py" --stage "$stage/dist/PPSA99007"
+printf 'Built native app stage: %s\n' "$stage/dist/PPSA99007"

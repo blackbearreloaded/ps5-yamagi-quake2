@@ -41,15 +41,16 @@ Mesa EGL/GL and glslang; it does not need game data or a console.
 
 `make native` stages a patched Yamagi checkout under `build/ps5-native-fixed/`,
 builds the native executable and clean-room libc, validates the already converted
-presentation assets, and assembles a data-free `dist/PPSA99007.zip`. `make package`
-is the convenience release target. Packaging uses an explicit file allowlist and
-rejects extra files left in the output folder, including game data and saves.
+presentation assets. `make package` adds the hash-pinned official demo and its
+original notices to `dist/PPSA99007.zip`. Packaging uses an explicit file allowlist
+and rejects unexpected files left in the output folder, including saves or retail data.
 
 `make ffpfsc` then compresses that same allowlisted folder with MkPFS
 `6cb8313dfe0c988ac52617794553f343243d3a56`, restored through the existing
 boilerplate helper. MkPFS `--verify` checks the image contents before the build
-writes `PPSA99007.ffpfsc.sha256`. Python venv support is required. Game data is
-still excluded from the image; add data to an unpacked folder and repack for play.
+writes `PPSA99007.ffpfsc.sha256`. The image is also unpacked, compared byte-for-byte
+with the source folder and checked for its required startup assets. Python venv
+support is required. The resulting image includes the demo and can launch directly.
 
 The public source archive supplied with the release includes the game repository
 and the pinned Yamagi source tree. The extracted OpenGL release's `sources/`

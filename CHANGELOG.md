@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.2 — 2026-09-08
+
+- Fix clean-install startup by including the hash-verified official demo and
+  original notices in both ZIP and FFPFSC releases.
+- Unpack the finished FFPFSC in CI, compare every file and validate startup assets
+  before uploading either playable package.
+
 ## 0.1.0-alpha.1 — 2026-09-08
 
 - First packaged 1080p PS5 release of the Yamagi Quake II 8.70 port.

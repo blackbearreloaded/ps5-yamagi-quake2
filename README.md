@@ -23,14 +23,17 @@
 
 This app requires an already configured, compatible PS5 homebrew environment.
 It contains no exploit, proprietary Sony SDK or firmware modules.
-**Quake II game data is required and is not included in the repository or app download.**
+**Current app downloads include the verified Quake II 3.14 demo and are ready
+to launch.** Retail game data is separate. Game assets are downloaded during
+packaging and remain outside Git; their original license and readme accompany them.
 
 ## Install
 
 1. Download `PPSA99007.zip` and verify it against `SHA256SUMS` from the
-   [release page](https://github.com/blackbearreloaded/ps5-yamagi-quake2/releases).
-2. Extract the archive and add your game data to `PPSA99007/assets/baseq2/`.
-   The supported 3.14 demo is the tested baseline; see [game data setup](docs/game-data.md).
+   [release page](https://github.com/blackbearreloaded/ps5-yamagi-quake2/releases)
+   using its accompanying `.sha256` file.
+2. Extract the archive. Demo data is already present in `PPSA99007/assets/baseq2/`.
+   To use your own retail game, see [game data setup](docs/game-data.md).
 3. Copy the complete `PPSA99007` folder into your loader's homebrew directory,
    normally `/data/homebrew/`, producing `/data/homebrew/PPSA99007/eboot.bin`.
 4. Refresh or restart the loader, then launch **Yamagi Quake II**. Updated shell
@@ -41,17 +44,18 @@ PPSA99007/
 ├── eboot.bin
 ├── assets/baseq2/
 │   ├── yq2.cfg             supplied controller/audio defaults
-│   ├── pak0.pak            add separately
-│   └── players/            add with the demo data
+│   ├── pak0.pak            verified demo data
+│   ├── players/            demo player assets
+│   └── DEMO-LICENSE.txt    original demo terms
 ├── sce_module/libc.prx     clean-room application runtime
 └── sce_sys/                metadata, artwork and selection music
 ```
 
-The release ZIP is deliberately a folder package so game data can be added
-before the app is mounted. It will not start correctly without that data.
-`PPSA99007.ffpfsc` is also available, with its own `.sha256` file. This compressed
-image contains no game data; playing from it requires unpacking, adding your
-data and repacking. Use the ZIP for the straightforward installation path.
+The ZIP and `PPSA99007.ffpfsc` contain the same complete demo installation.
+Install either format supported by your loader. The FFPFSC is unpacked and
+compared byte-for-byte during CI, including its required startup assets.
+Version `0.1.0-alpha.1` omitted game data and cannot launch by itself; replace
+that package with the current demo build.
 Save games and user configuration live under `/download0/yamagi/baseq2/`.
 Back up that directory before replacing an existing installation.
 
@@ -111,7 +115,8 @@ make ffpfsc
 Outputs: `dist/PPSA99007/`, `dist/PPSA99007.zip` and its checksum file.
 `make ffpfsc` additionally creates `dist/PPSA99007.ffpfsc` and its checksum,
 using pinned MkPFS with content verification enabled.
-The build never downloads or packages Quake II game data. It restores pinned
+Packaging downloads the official demo from Yamagi's mirror, checks its pinned
+SHA-256, and includes unchanged game assets and original notices. It also restores pinned
 Yamagi and native-app sources, the public homebrew toolchain, PacBrew SDL2 and
 the [PS5 OpenGL GitHub SDK](https://github.com/blackbearreloaded/ps5-opengl/releases/tag/v0.1.0-perf20260907-sampled),
 plus a small hash-pinned game runtime overlay. Graphics binaries are release dependencies, not Git blobs.
@@ -127,7 +132,7 @@ make test
 The [Build workflow](.github/workflows/build.yml) runs host regressions on pushes
 and pull requests. Manual dispatch builds and uploads the native ZIP, FFPFSC
 and their checksums using the frozen SDK release asset. Set the optional
-`release_tag` input to an existing release to publish its FFPFSC and checksum;
+`release_tag` input to an existing release to publish both packages and checksums;
 leave it blank for CI artifacts only. Existing release files are not overwritten.
 Console testing is manual and separate.
 

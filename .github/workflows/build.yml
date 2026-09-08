@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Existing release to receive the FFPFSC and checksum (blank builds artifacts only)
+        description: Existing release to receive the playable demo ZIP, FFPFSC and checksums (blank builds artifacts only)
         type: string
         default: ''
 
@@ -49,10 +49,10 @@ jobs:
             dist/PPSA99007.ffpfsc
             dist/PPSA99007.ffpfsc.sha256
           if-no-files-found: error
-      - name: Publish FFPFSC to the requested release
+      - name: Publish verified demo packages to the requested release
         if: inputs.release_tag != ''
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
           gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
-          gh release upload "$RELEASE_TAG" dist/PPSA99007.ffpfsc dist/PPSA99007.ffpfsc.sha256 --repo "$GITHUB_REPOSITORY"
+          gh release upload "$RELEASE_TAG" dist/PPSA99007.zip dist/PPSA99007.zip.sha256 dist/PPSA99007.ffpfsc dist/PPSA99007.ffpfsc.sha256 --repo "$GITHUB_REPOSITORY"
