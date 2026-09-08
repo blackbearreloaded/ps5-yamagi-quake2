@@ -18,6 +18,10 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="GPL-3.0-or-later"></a>
 </p>
 
+Demo available by clicking the image below.
+
+[![Yamagi Quake II gameplay on PS5 with the FPS overlay](docs/images/quake2-gameplay.png)](https://i.imgur.com/LSRzui3.mp4)
+
 ## Highlights
 
 - Based on Yamagi Quake II 8.70, with a native PS5 lifecycle and static GL3 renderer.
