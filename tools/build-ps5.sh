@@ -12,7 +12,7 @@ stage="$root/build/ps5-native-fixed"
 	printf 'missing PS5 native-app boilerplate: %s\n' "$template" >&2
 	exit 2
 }
-[[ $(git -C "$template" rev-parse HEAD) == 4e1d1277dd0531a9a9df8c780e446b9cc26534dd ]]
+[[ $(git -C "$template" rev-parse HEAD) == 722f2227a8bb6fa2229120546995b6562552c752 ]]
 git -C "$template" diff --exit-code HEAD -- >/dev/null
 [[ -x "$template/.deps/native/ps5-payload-sdk/bin/prospero-lld" ]] || {
 	printf 'missing cached PS5 payload SDK under %s/.deps/native\n' "$template" >&2
@@ -30,6 +30,8 @@ for directory in assets runtime sce_sys tooling tools; do
 	mkdir -p "$stage/$directory"
 	cp -a "$template/$directory/." "$stage/$directory/"
 done
+# The tested RELRO alignment fix is kept here until published upstream.
+(cd "$stage" && git apply "$root/patches/0003-native-relro-alignment.patch")
 # Import stubs below must be written only into this build's own SDK copy.
 cp -a "$template/.deps/native" "$stage/.deps/native"
 mkdir -p "$root/.deps/pacbrew"

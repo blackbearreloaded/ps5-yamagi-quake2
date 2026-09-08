@@ -8,6 +8,10 @@ except the game-adapted runtime remains byte-identical to the OpenGL release.
 Native compilation then fetches hash-pinned PacBrew SDL2 if needed. These caches
 are local and ignored by Git. Python 3.12 is required for safe tar extraction.
 
+The published native-app revision is combined with
+`patches/0003-native-relro-alignment.patch`, reproducing the tested local
+packaging fix without relying on its unpublished commit.
+
 The repository can remain private: `gh auth login` must authenticate an account
 with access to download its runtime overlay release asset. In Actions, `GH_TOKEN` is supplied
 from the repository's read-only token. No token is written into source or bundles.
@@ -15,7 +19,7 @@ from the repository's read-only token. No token is written into source or bundle
 | Dependency | Pin |
 | --- | --- |
 | Yamagi 8.70 | `76e81f9f3fc3ed859006d81904bfeb6cb33fb525` |
-| Native-app boilerplate | `4e1d1277dd0531a9a9df8c780e446b9cc26534dd` |
+| Native-app boilerplate | `722f2227a8bb6fa2229120546995b6562552c752` |
 | Public PS5 Payload SDK | `v0.42`, hash checked by the pinned boilerplate |
 | PacBrew | `v0.40.2`, hash checked by the pinned boilerplate |
 | Game OpenGL source base | `cef6c1b869ba3f0c8acaab5b171bbb33eca07f03` |

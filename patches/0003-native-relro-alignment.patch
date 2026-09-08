@@ -1,0 +1,40 @@
+diff --git a/tooling/native/sce_module_writer.cpp b/tooling/native/sce_module_writer.cpp
+index b41dd9f..4af95de 100644
+--- a/tooling/native/sce_module_writer.cpp
++++ b/tooling/native/sce_module_writer.cpp
+@@ -620,6 +620,7 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+     std::uint64_t ro_start = std::numeric_limits<std::uint64_t>::max();
+     std::uint64_t ro_end = 0;
+     std::uint64_t relro_start = std::numeric_limits<std::uint64_t>::max();
++    std::uint64_t relro_file = std::numeric_limits<std::uint64_t>::max();
+     std::uint64_t relro_content_end = 0;
+     std::uint64_t data_start = dynamic_source.address;
+     std::uint64_t data_end = data_start + 8;
+@@ -650,6 +651,10 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+         }
+         else if (relro_section(input.name))
+         {
++            if (input.address < relro_start)
++                relro_file = input.file_offset;
++            else if (input.address == relro_start)
++                relro_file = std::min(relro_file, input.file_offset);
+             relro_start = std::min(relro_start, input.address);
+             relro_content_end = std::max(relro_content_end, end);
+         }
+@@ -668,6 +673,8 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+     }
+     require(relro_start != std::numeric_limits<std::uint64_t>::max(),
+             "LLVM-linked image has no GOT/RELRO region");
++    require(relro_file != std::numeric_limits<std::uint64_t>::max(),
++            "LLVM-linked image has no file-backed GOT/RELRO region");
+     if (ro_start == std::numeric_limits<std::uint64_t>::max())
+     {
+         ro_start = align_up(text_end, kPage);
+@@ -838,7 +845,6 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+             continue;
+         copy_bytes(output, input.file_offset, input.data);
+     }
+-    const std::uint64_t relro_file = got.file_offset;
+     copy_bytes(output, relro_file + process_address - relro_start, process_parameters);
+     copy_bytes(output, relro_file + blocks_address - relro_start, blocks.data);
+     copy_bytes(output, dynamic_file_at(string_address), dynamic_strings);

@@ -6,7 +6,7 @@ per-file notices and licenses; this repository does not relicense game data.
 | Component | Source / license |
 | --- | --- |
 | Yamagi Quake II 8.70 and id Software engine/game code | [Pinned source](https://github.com/yquake2/yquake2/tree/76e81f9f3fc3ed859006d81904bfeb6cb33fb525), GPL-2.0-or-later and bundled component notices |
-| Native app boilerplate / clean-room libc | [Pinned source](https://github.com/blackbearreloaded/ps5-native-app-boilerplate/tree/4e1d1277dd0531a9a9df8c780e446b9cc26534dd), GPL-3.0-or-later and retained notices |
+| Native app boilerplate / clean-room libc | [Pinned source](https://github.com/blackbearreloaded/ps5-native-app-boilerplate/tree/722f2227a8bb6fa2229120546995b6562552c752), GPL-3.0-or-later and retained notices |
 | PS5 OpenGL | [Pinned base](https://github.com/blackbearreloaded/ps5-opengl/tree/cef6c1b869ba3f0c8acaab5b171bbb33eca07f03), GPL-3.0 and dependency-specific notices; game changes supplied here |
 | Mesa 26.2.0 / OpenGNM PSBC | Primarily MIT, with per-file exceptions; sources/licenses included in the SDK dependency archive |
 | SDL2 / PacBrew PS5 port | [PacBrew sources](https://github.com/ps5-payload-dev/pacbrew-repo), SDL zlib license and port/component notices; pinned binary distribution v0.40.2 |
