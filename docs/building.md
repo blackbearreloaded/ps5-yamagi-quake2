@@ -16,6 +16,12 @@ The repository can remain private: `gh auth login` must authenticate an account
 with access to download its runtime overlay release asset. In Actions, `GH_TOKEN` is supplied
 from the repository's read-only token. No token is written into source or bundles.
 
+While PS5 OpenGL is private, native CI first fetches an unchanged copy of its
+release archive from this game's private release. The ordinary bootstrap still
+downloads directly from `blackbearreloaded/ps5-opengl`. Both paths verify the
+same upstream SHA-256 before extraction; the cache is not a different SDK build.
+This avoids giving Actions a personal token with access to other repositories.
+
 | Dependency | Pin |
 | --- | --- |
 | Yamagi 8.70 | `76e81f9f3fc3ed859006d81904bfeb6cb33fb525` |
