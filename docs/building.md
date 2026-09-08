@@ -14,7 +14,9 @@ packaging fix without relying on its unpublished commit.
 
 The repository can remain private: `gh auth login` must authenticate an account
 with access to download its runtime overlay release asset. In Actions, `GH_TOKEN` is supplied
-from the repository's read-only token. No token is written into source or bundles.
+from the repository token. The manual native job has contents-write permission
+to attach requested release artifacts; the host job remains read-only.
+No token is written into source or bundles.
 
 While PS5 OpenGL is private, native CI first fetches an unchanged copy of its
 release archive from this game's private release. The ordinary bootstrap still
@@ -42,6 +44,12 @@ builds the native executable and clean-room libc, validates the already converte
 presentation assets, and assembles a data-free `dist/PPSA99007.zip`. `make package`
 is the convenience release target. Packaging uses an explicit file allowlist and
 rejects extra files left in the output folder, including game data and saves.
+
+`make ffpfsc` then compresses that same allowlisted folder with MkPFS
+`6cb8313dfe0c988ac52617794553f343243d3a56`, restored through the existing
+boilerplate helper. MkPFS `--verify` checks the image contents before the build
+writes `PPSA99007.ffpfsc.sha256`. Python venv support is required. Game data is
+still excluded from the image; add data to an unpacked folder and repack for play.
 
 The public source archive supplied with the release includes the game repository
 and the pinned Yamagi source tree. The extracted OpenGL release's `sources/`

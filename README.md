@@ -49,6 +49,9 @@ PPSA99007/
 
 The release ZIP is deliberately a folder package so game data can be added
 before the app is mounted. It will not start correctly without that data.
+`PPSA99007.ffpfsc` is also available, with its own `.sha256` file. This compressed
+image contains no game data; playing from it requires unpacking, adding your
+data and repacking. Use the ZIP for the straightforward installation path.
 Save games and user configuration live under `/download0/yamagi/baseq2/`.
 Back up that directory before replacing an existing installation.
 
@@ -94,16 +97,20 @@ Use Ubuntu 24.04 or WSL with Python 3.12 and Clang 18:
 
 ```bash
 sudo apt update
-sudo apt install build-essential clang clang-18 lld-18 llvm-18 make python3 git gh \
+sudo apt install build-essential clang clang-18 lld-18 llvm-18 make python3 python3-venv git gh \
   pkg-config wget unzip libssl-dev libsdl2-dev libegl1-mesa-dev \
   libgl1-mesa-dri glslang-tools
 
 gh auth login                    # account with access while this repo is private
 make deps
 make package
+# Optional: also create the compressed image
+make ffpfsc
 ```
 
 Outputs: `dist/PPSA99007/`, `dist/PPSA99007.zip` and its checksum file.
+`make ffpfsc` additionally creates `dist/PPSA99007.ffpfsc` and its checksum,
+using pinned MkPFS with content verification enabled.
 The build never downloads or packages Quake II game data. It restores pinned
 Yamagi and native-app sources, the public homebrew toolchain, PacBrew SDL2 and
 the [PS5 OpenGL GitHub SDK](https://github.com/blackbearreloaded/ps5-opengl/releases/tag/v0.1.0-perf20260907-sampled),
@@ -118,8 +125,11 @@ make test
 ```
 
 The [Build workflow](.github/workflows/build.yml) runs host regressions on pushes
-and pull requests. Manual dispatch also builds and uploads the native folder
-ZIP using the frozen SDK release asset. Console testing is manual and separate.
+and pull requests. Manual dispatch builds and uploads the native ZIP, FFPFSC
+and their checksums using the frozen SDK release asset. Set the optional
+`release_tag` input to an existing release to publish its FFPFSC and checksum;
+leave it blank for CI artifacts only. Existing release files are not overwritten.
+Console testing is manual and separate.
 
 ## Project layout
 
