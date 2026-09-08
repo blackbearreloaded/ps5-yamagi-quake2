@@ -94,7 +94,7 @@ Use Ubuntu 24.04 or WSL with Python 3.12 and Clang 18:
 
 ```bash
 sudo apt update
-sudo apt install build-essential clang-18 lld-18 llvm-18 make python3 git gh \
+sudo apt install build-essential clang clang-18 lld-18 llvm-18 make python3 git gh \
   pkg-config wget unzip libssl-dev libsdl2-dev libegl1-mesa-dev \
   libgl1-mesa-dri glslang-tools
 
