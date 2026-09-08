@@ -16,8 +16,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
 > build tools, packaging and port-specific tests. Upstream developers retain
 > credit for their original work; see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-> **Disclaimer:** This is an AI-assisted project developed using OpenAI Codex.
-
 <p align="center"><img src="sce_sys/icon0.png" width="128" alt="Yamagi Quake II icon"></p>
 <h1 align="center">Yamagi Quake II for PS5</h1>
 <p align="center"><strong>Quake II, running natively on PlayStation 5 homebrew.</strong><br>1080p OpenGL rendering, DualSense controls, sound and local saves.</p>
