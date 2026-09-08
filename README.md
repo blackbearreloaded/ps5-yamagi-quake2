@@ -1,3 +1,10 @@
+> **Original game credits:** Quake II was created by **id Software**.
+> Thanks to the original development team for the game and its
+> [official open-source engine release](https://github.com/id-Software/Quake-2).
+> This PS5 port builds on [Yamagi Quake II](https://github.com/yquake2/yquake2);
+> credit and thanks also go to the Yamagi developers and contributors for their
+> continued maintenance and improvements.
+
 > **Disclaimer:** This is an AI-assisted project developed using OpenAI Codex.
 
 <p align="center"><img src="sce_sys/icon0.png" width="128" alt="Yamagi Quake II icon"></p>
