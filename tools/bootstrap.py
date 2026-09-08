@@ -67,6 +67,10 @@ def main():
     run('bash', str(ROOT / 'tools/check.sh'))
     template = ROOT / pins['native_app']['directory']
     run('bash', str(template / 'tools/setup-native-dependencies.sh'))
+    pacbrew = cache / 'pacbrew'
+    if not pacbrew.exists():
+        run('bash', str(template / 'tools/setup-pacbrew-dependencies.sh'), '--resolve', 'sdl2')
+        pacbrew.symlink_to(template / '.deps/pacbrew', target_is_directory=True)
 
 
 if __name__ == '__main__':
