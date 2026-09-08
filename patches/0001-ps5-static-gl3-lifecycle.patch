@@ -1,0 +1,1210 @@
+diff --git a/src/backends/generic/misc.c b/src/backends/generic/misc.c
+index d9acea5..aa0929c 100644
+--- a/src/backends/generic/misc.c
++++ b/src/backends/generic/misc.c
+@@ -174,6 +174,9 @@ Sys_GetCwd(char *buf, size_t size)
+ 
+ const char *Sys_GetBinaryDir(void)
+ {
++#ifdef YQ2_PS5
++	return "/app0/";
++#else
+ 	static char exeDir[PATH_MAX] = {0};
+ 
+ 	if(exeDir[0] != '\0') {
+@@ -200,6 +203,7 @@ const char *Sys_GetBinaryDir(void)
+ 	}
+ 
+ 	return exeDir;
++#endif
+ }
+ 
+ #if defined (__GNUC__) && (__i386 || __x86_64__)
+diff --git a/src/backends/unix/network.c b/src/backends/unix/network.c
+index c89637e..a139020 100644
+--- a/src/backends/unix/network.c
++++ b/src/backends/unix/network.c
+@@ -44,6 +44,10 @@
+ #include <arpa/inet.h>
+ #include <net/if.h>
+ 
++#ifdef YQ2_PS5
++#include "ps5_net_compat.h"
++#endif
++
+ netadr_t net_local_adr;
+ 
+ #define LOOPBACK 0x7f000001
+diff --git a/src/backends/unix/system.c b/src/backends/unix/system.c
+index afb0e32..cac4938 100644
+--- a/src/backends/unix/system.c
++++ b/src/backends/unix/system.c
+@@ -27,6 +27,7 @@
+ #include <dirent.h>
+ #include <dlfcn.h>
+ #include <fcntl.h>
++#include <limits.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+@@ -47,6 +48,9 @@
+ 
+ #include "../../common/header/common.h"
+ #include "../../common/header/glob.h"
++#ifdef YQ2_PS5
++#include "ps5_lifecycle.h"
++#endif
+ 
+ // Pointer to game library
+ static void *game_library;
+@@ -96,7 +100,11 @@ Sys_Error(const char *error, ...)
+ 	va_end(argptr);
+ 	fprintf(stderr, "Error: %s\n", string);
+ 
++#ifdef YQ2_PS5
++	ps5_exit(ps5_frame_stop(1));
++#else
+ 	exit(1);
++#endif
+ }
+ 
+ void
+@@ -121,7 +129,11 @@ Sys_Quit(void)
+ 
+ 	printf("------------------------------------\n");
+ 
++#ifdef YQ2_PS5
++	ps5_exit(ps5_frame_stop(0));
++#else
+ 	exit(0);
++#endif
+ }
+ 
+ void
+@@ -420,6 +432,10 @@ Sys_UnloadGame(void)
+ void *
+ Sys_GetGameAPI(void *parms)
+ {
++#ifdef YQ2_PS5
++	extern void *GetGameAPI(void *);
++	return GetGameAPI(parms);
++#else
+ 	typedef void *(*fnAPI)(void *);
+ 	fnAPI GetGameAPI;
+ 
+@@ -507,6 +523,7 @@ Sys_GetGameAPI(void *parms)
+ 	}
+ 
+ 	return GetGameAPI(parms);
++#endif
+ }
+ 
+ /* ================================================================ */
+@@ -648,6 +665,26 @@ Sys_RemoveDir(const char *path)
+ qboolean
+ Sys_Realpath(const char *in, char *out, size_t size)
+ {
++#ifdef YQ2_PS5
++	/* Native realpath is denied by the title sandbox. These are the only
++	 * search roots supplied by the native entry, already absolute and fixed. */
++	static const char *roots[] = { "/download0/yamagi", "/app0", "/app0/assets" };
++	size_t length = strlen(in);
++	while (length > 1 && in[length - 1] == '/') --length;
++	for (size_t i = 0; i < sizeof(roots) / sizeof(roots[0]); ++i)
++	{
++		if (strlen(roots[i]) == length && !strncmp(in, roots[i], length))
++		{
++			struct stat info;
++			if (length >= size || stat(roots[i], &info) != 0 || !S_ISDIR(info.st_mode))
++				return false;
++			Q_strlcpy(out, roots[i], size);
++			return true;
++		}
++	}
++	Com_Printf("Unsupported native search root: %s\n", in);
++	return false;
++#else
+ 	char *converted = realpath(in, NULL);
+ 
+ 	if (converted == NULL)
+@@ -660,6 +697,7 @@ Sys_Realpath(const char *in, char *out, size_t size)
+ 	free(converted);
+ 
+ 	return true;
++#endif
+ }
+ 
+ /* ================================================================ */
+diff --git a/src/client/cl_image.c b/src/client/cl_image.c
+index 1de83dc..581f0e5 100644
+--- a/src/client/cl_image.c
++++ b/src/client/cl_image.c
+@@ -31,6 +31,9 @@
+ // don't need HDR stuff
+ #define STBI_NO_LINEAR
+ #define STBI_NO_HDR
++#ifdef YQ2_PS5
++#define STB_IMAGE_STATIC
++#endif
+ // make sure STB_image uses standard malloc(), as we'll use standard free() to deallocate
+ #define STBI_MALLOC(sz)    malloc(sz)
+ #define STBI_REALLOC(p,sz) realloc(p,sz)
+diff --git a/src/client/cl_screen.c b/src/client/cl_screen.c
+index 33b0a84..043067f 100644
+--- a/src/client/cl_screen.c
++++ b/src/client/cl_screen.c
+@@ -1555,6 +1555,30 @@ SCR_DrawSpeed(void)
+ static void
+ SCR_Framecounter(void)
+ {
++#ifdef YQ2_PS5
++	static long long window_start;
++	static unsigned frames;
++	static double fps;
++	long long now = Sys_Microseconds();
++	char text[32];
++	float scale = SCR_GetConsoleScale();
++	if (cl_showfps->value < 1) { window_start = 0; frames = 0; return; }
++	if (window_start && now > window_start)
++	{
++		++frames;
++		if (now - window_start >= 500000)
++		{
++			fps = frames * 1000000.0 / (now - window_start);
++			window_start = now;
++			frames = 0;
++		}
++	}
++	else { window_start = now; frames = 0; }
++	snprintf(text, sizeof(text), "FPS: %.1f", fps);
++	DrawStringScaled(8 * scale, 8 * scale, text, scale);
++	SCR_AddDirtyPoint(8 * scale, 8 * scale);
++	SCR_AddDirtyPoint((8 + strlen(text) * CHAR_SIZE) * scale, (8 + CHAR_SIZE) * scale);
++#else
+ 	long long newtime;
+ 	static int frame;
+ 	static int frametimes[60] = {0};
+@@ -1643,6 +1667,7 @@ SCR_Framecounter(void)
+ 			SCR_AddDirtyPoint(viddef.width, scale + 10);
+ 		}
+ 	}
++#endif
+ }
+ 
+ // ----
+diff --git a/src/client/input/sdl2.c b/src/client/input/sdl2.c
+index c280a4f..30503d3 100644
+--- a/src/client/input/sdl2.c
++++ b/src/client/input/sdl2.c
+@@ -36,6 +36,11 @@
+ 
+ #include <SDL2/SDL.h>
+ 
++#ifdef YQ2_PS5
++int ps5_input_start(void);
++void ps5_input_stop(void);
++#endif
++
+ #include "header/input.h"
+ #include "header/gyro.h"
+ #include "../header/keyboard.h"
+@@ -2936,6 +2941,11 @@ IN_Init(void)
+ 
+ 	IN_Controller_Init(false);
+ 
++#ifdef YQ2_PS5
++	if (!ps5_input_start())
++		Com_Error(ERR_FATAL, "Cannot start controller polling: %s", SDL_GetError());
++#endif
++
+ 	Com_Printf("------------------------------------\n\n");
+ }
+ 
+@@ -2992,6 +3002,9 @@ IN_Shutdown(void)
+ 
+ 	Com_Printf("Shutting down input.\n");
+ 
++#ifdef YQ2_PS5
++	ps5_input_stop();
++#endif
+ 	IN_Controller_Shutdown(false);
+ 
+ 	const Uint32 subsystems = SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC;
+diff --git a/src/client/refresh/files/common.c b/src/client/refresh/files/common.c
+index eba3fd3..190ee95 100644
+--- a/src/client/refresh/files/common.c
++++ b/src/client/refresh/files/common.c
+@@ -41,6 +41,7 @@ R_Printf(int level, const char* msg, ...)
+ 	va_end(argptr);
+ }
+ 
++#ifndef YQ2_PS5
+ void
+ Sys_Error(const char *error, ...)
+ {
+@@ -53,6 +54,7 @@ Sys_Error(const char *error, ...)
+ 
+ 	ri.Sys_Error(ERR_FATAL, "%s", text);
+ }
++#endif
+ 
+ void
+ Com_Printf(const char *msg, ...)
+diff --git a/src/client/refresh/gl3/gl3_draw.c b/src/client/refresh/gl3/gl3_draw.c
+index bd53035..153c637 100644
+--- a/src/client/refresh/gl3/gl3_draw.c
++++ b/src/client/refresh/gl3/gl3_draw.c
+@@ -33,6 +33,35 @@ gl3image_t *draw_chars;
+ 
+ static GLuint vbo2D = 0, vao2D = 0, vao2Dcolor = 0; // vao2D is for textured rendering, vao2Dcolor for color-only
+ 
++#ifdef YQ2_PS5
++/* Keep consecutive font glyphs in one draw; flush before other rendering. */
++static GLfloat charVertices[1024 * 6 * 4];
++static unsigned charVertexCount;
++
++void GL3_FlushChars(void)
++{
++	if (!charVertexCount) return;
++	GL3_UseProgram(gl3state.si2D.shaderProgram);
++	GL3_Bind(draw_chars->texnum);
++	GL3_BindVAO(vao2D);
++	GL3_BindVBO(vbo2D);
++	glBufferData(GL_ARRAY_BUFFER, charVertexCount * 4 * sizeof(GLfloat), charVertices, GL_STREAM_DRAW);
++	glDrawArrays(GL_TRIANGLES, 0, charVertexCount);
++	charVertexCount = 0;
++}
++
++static void appendChar(float x, float y, float size, float s, float t)
++{
++	if (charVertexCount == 1024 * 6) GL3_FlushChars();
++	const GLfloat vertices[6][4] = {
++		{x, y+size, s, t+0.0625f}, {x, y, s, t}, {x+size, y+size, s+0.0625f, t+0.0625f},
++		{x+size, y+size, s+0.0625f, t+0.0625f}, {x, y, s, t}, {x+size, y, s+0.0625f, t}
++	};
++	memcpy(charVertices + charVertexCount * 4, vertices, sizeof(vertices));
++	charVertexCount += 6;
++}
++#endif
++
+ void
+ GL3_Draw_InitLocal(void)
+ {
+@@ -79,6 +108,9 @@ GL3_Draw_InitLocal(void)
+ void
+ GL3_Draw_ShutdownLocal(void)
+ {
++#ifdef YQ2_PS5
++	charVertexCount = 0;
++#endif
+ 	glDeleteBuffers(1, &vbo2D);
+ 	vbo2D = 0;
+ 	glDeleteVertexArrays(1, &vao2D);
+@@ -102,11 +134,13 @@ drawTexturedRectangle(float x, float y, float w, float h,
+ 	 *  x,y        x+w,y
+ 	 */
+ 
+-	GLfloat vBuf[16] = {
++	GLfloat vBuf[24] = {
+ 	//  X,   Y,   S,  T
+ 		x,   y+h, sl, th,
+ 		x,   y,   sl, tl,
+ 		x+w, y+h, sh, th,
++		x+w, y+h, sh, th,
++		x,   y,   sl, tl,
+ 		x+w, y,   sh, tl
+ 	};
+ 
+@@ -117,7 +151,7 @@ drawTexturedRectangle(float x, float y, float w, float h,
+ 	GL3_BindVBO(vbo2D);
+ 	glBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
+ 
+-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
++	glDrawArrays(GL_TRIANGLES, 0, 6);
+ 
+ 	//glMultiDrawArrays(mode, first, count, drawcount) ??
+ }
+@@ -153,11 +187,16 @@ GL3_Draw_CharScaled(int x, int y, int num, float scale)
+ 
+ 	scaledSize = 8*scale;
+ 
++#ifdef YQ2_PS5
++	(void)size;
++	appendChar(x, y, scaledSize, fcol, frow);
++#else
+ 	// TODO: batchen?
+ 
+ 	GL3_UseProgram(gl3state.si2D.shaderProgram);
+ 	GL3_Bind(draw_chars->texnum);
+ 	drawTexturedRectangle(x, y, scaledSize, scaledSize, fcol, frow, fcol+size, frow+size);
++#endif
+ }
+ 
+ gl3image_t *
+@@ -186,6 +225,9 @@ GL3_Draw_GetPicSize(int *w, int *h, const char *pic)
+ void
+ GL3_Draw_StretchPic(int x, int y, int w, int h, const char *pic)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	gl3image_t *gl = R_FindPic(pic, (findimage_t)GL3_FindImage);
+ 
+ 	if (!gl)
+@@ -203,6 +245,9 @@ GL3_Draw_StretchPic(int x, int y, int w, int h, const char *pic)
+ void
+ GL3_Draw_PicScaled(int x, int y, const char *pic, float factor)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	gl3image_t *gl = R_FindPic(pic, (findimage_t)GL3_FindImage);
+ 	if (!gl)
+ 	{
+@@ -219,6 +264,9 @@ GL3_Draw_PicScaled(int x, int y, const char *pic, float factor)
+ void
+ GL3_Draw_PicScaledCol(int x, int y, const char *pic, float factor, const float color[3])
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	gl3image_t *gl = R_FindPic(pic, (findimage_t)GL3_FindImage);
+ 	if (!gl)
+ 	{
+@@ -246,6 +294,9 @@ GL3_Draw_PicScaledCol(int x, int y, const char *pic, float factor, const float c
+ void
+ GL3_Draw_TileClear(int x, int y, int w, int h, const char *pic)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	gl3image_t *image = R_FindPic(pic, (findimage_t)GL3_FindImage);
+ 	if (!image)
+ 	{
+@@ -262,6 +313,9 @@ GL3_Draw_TileClear(int x, int y, int w, int h, const char *pic)
+ void
+ GL3_DrawFrameBufferObject(int x, int y, int w, int h, GLuint fboTexture, const float v_blend[4])
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	qboolean underwater = (r_newrefdef.rdflags & RDF_UNDERWATER) != 0;
+ 	gl3ShaderInfo_t* shader = underwater ? &gl3state.si2DpostProcessWater
+ 	                                     : &gl3state.si2DpostProcess;
+@@ -286,6 +340,9 @@ GL3_DrawFrameBufferObject(int x, int y, int w, int h, GLuint fboTexture, const f
+ void
+ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	union
+ 	{
+ 		unsigned c;
+@@ -300,11 +357,13 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+ 
+ 	color.c = d_8to24table[c];
+ 
+-	GLfloat vBuf[8] = {
++	GLfloat vBuf[12] = {
+ 	//  X,   Y
+ 		x,   y+h,
+ 		x,   y,
+ 		x+w, y+h,
++		x+w, y+h,
++		x,   y,
+ 		x+w, y
+ 	};
+ 
+@@ -322,7 +381,7 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+ 	GL3_BindVBO(vbo2D);
+ 	glBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
+ 
+-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
++	glDrawArrays(GL_TRIANGLES, 0, 6);
+ }
+ 
+ // in GL1 this is called R_Flash() (which just calls R_PolyBlend())
+@@ -331,6 +390,9 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+ void
+ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	if (gl_polyblend->value == 0)
+ 	{
+ 		return;
+@@ -338,11 +400,13 @@ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
+ 
+ 	int i=0;
+ 
+-	GLfloat vBuf[8] = {
++	GLfloat vBuf[12] = {
+ 	//  X,   Y
+ 		x,   y+h,
+ 		x,   y,
+ 		x+w, y+h,
++		x+w, y+h,
++		x,   y,
+ 		x+w, y
+ 	};
+ 
+@@ -359,7 +423,7 @@ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
+ 	GL3_BindVBO(vbo2D);
+ 	glBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
+ 
+-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
++	glDrawArrays(GL_TRIANGLES, 0, 6);
+ 
+ 	glDisable(GL_BLEND);
+ }
+@@ -374,6 +438,9 @@ GL3_Draw_FadeScreen(void)
+ void
+ GL3_Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *data, int bits)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	int i, j;
+ 
+ 	GL3_Bind(0);
+diff --git a/src/client/refresh/gl3/gl3_image.c b/src/client/refresh/gl3/gl3_image.c
+index c436bc8..c46031c 100644
+--- a/src/client/refresh/gl3/gl3_image.c
++++ b/src/client/refresh/gl3/gl3_image.c
+@@ -207,6 +207,16 @@ GL3_Upload32(unsigned *data, int width, int height, qboolean mipmap)
+ 		}
+ 	}
+ 
++#ifdef YQ2_PS5
++	/* ponytail: single-level textures keep the frozen runtime on its batched
++	 * path. Enable gl3_mipmaps and vid_restart for the slower quality path;
++	 * restore the default when the runtime qualifies mipmapped batching. */
++	if (!ri.Cvar_Get("gl3_mipmaps", "0", CVAR_ARCHIVE)->value)
++	{
++		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
++		mipmap = false;
++	}
++#endif
+ 	glTexImage2D(GL_TEXTURE_2D, 0, comp, width, height,
+ 	             0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+ 
+diff --git a/src/client/refresh/gl3/gl3_main.c b/src/client/refresh/gl3/gl3_main.c
+index 0141fe7..b27e740 100644
+--- a/src/client/refresh/gl3/gl3_main.c
++++ b/src/client/refresh/gl3/gl3_main.c
+@@ -710,6 +710,29 @@ GL3_Shutdown(void)
+ void
+ GL3_BufferAndDraw3D(const gl3_3D_vtx_t* verts, int numVerts, GLenum drawMode)
+ {
++#ifdef YQ2_PS5
++	if (drawMode == GL_TRIANGLE_FAN || drawMode == GL_TRIANGLE_STRIP)
++	{
++		/* The native batch accepts triangle lists. Keep winding and every
++		 * vertex attribute; bounded chunks also cover unusually large faces. */
++		gl3_3D_vtx_t triangles[192];
++		int count = 0;
++		for (int i = 2; i < numVerts; ++i)
++		{
++			int a = drawMode == GL_TRIANGLE_FAN ? 0 : i - 2 + (i & 1);
++			int b = drawMode == GL_TRIANGLE_FAN ? i - 1 : i - 1 - (i & 1);
++			triangles[count++] = verts[a];
++			triangles[count++] = verts[b];
++			triangles[count++] = verts[i];
++			if (count == ARRLEN(triangles) || i == numVerts - 1)
++			{
++				GL3_BufferAndDraw3D(triangles, count, GL_TRIANGLES);
++				count = 0;
++			}
++		}
++		return;
++	}
++#endif
+ 	if(!gl3config.useBigVBO)
+ 	{
+ 		glBufferData( GL_ARRAY_BUFFER, sizeof(gl3_3D_vtx_t)*numVerts, verts, GL_STREAM_DRAW );
+@@ -1031,7 +1054,7 @@ GL3_DrawParticles(void)
+ 		glDepthMask(GL_FALSE);
+ 		glEnable(GL_BLEND);
+ 
+-#ifdef YQ2_GL3_GLES
++#if defined(YQ2_GL3_GLES) || defined(YQ2_PS5)
+ 		// the RPi4 GLES3 implementation doesn't draw particles if culling is
+ 		// enabled (at least with GL_FRONT which seems to be default in q2?)
+ 		glDisable(GL_CULL_FACE);
+@@ -1062,11 +1085,17 @@ GL3_DrawParticles(void)
+ 		GL3_BindVAO(gl3state.vaoParticle);
+ 		GL3_BindVBO(gl3state.vboParticle);
+ 		glBufferData(GL_ARRAY_BUFFER, sizeof(part_vtx)*numParticles, buf, GL_STREAM_DRAW);
++#ifdef YQ2_PS5
++		glUniform2f(glGetUniformLocation(gl3state.siParticle.shaderProgram, "particleViewport"),
++		            (float)r_newrefdef.width, (float)r_newrefdef.height);
++		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numParticles);
++#else
+ 		glDrawArrays(GL_POINTS, 0, numParticles);
++#endif
+ 
+ 		glDisable(GL_BLEND);
+ 		glDepthMask(GL_TRUE);
+-#ifdef YQ2_GL3_GLES
++#if defined(YQ2_GL3_GLES) || defined(YQ2_PS5)
+ 		if(r_cull->value != 0.0f)
+ 			glEnable(GL_CULL_FACE);
+ #else
+@@ -1666,16 +1695,32 @@ GL3_RenderView(refdef_t *fd)
+ 
+ 	GL3_MarkLeaves(); /* done here so we know if we're in water */
+ 
++#ifdef YQ2_PS5
++	extern void PS5_RenderStage(unsigned stage);
++	PS5_RenderStage(0);
++#endif
+ 	GL3_DrawWorld();
++#ifdef YQ2_PS5
++	PS5_RenderStage(1);
++#endif
+ 
+ 	GL3_DrawEntitiesOnList();
++#ifdef YQ2_PS5
++	PS5_RenderStage(2);
++#endif
+ 
+ 	// kick the silly gl1_flashblend poly lights
+ 	// GL3_RenderDlights();
+ 
+ 	GL3_DrawParticles();
++#ifdef YQ2_PS5
++	PS5_RenderStage(3);
++#endif
+ 
+ 	GL3_DrawAlphaSurfaces();
++#ifdef YQ2_PS5
++	PS5_RenderStage(4);
++#endif
+ 
+ 	// Note: R_Flash() is now GL3_Draw_Flash() and called from GL3_RenderFrame()
+ 
+@@ -1766,6 +1811,9 @@ GL3_SetLightLevel(entity_t *currententity)
+ static void
+ GL3_RenderFrame(refdef_t *fd)
+ {
++#ifdef YQ2_PS5
++	GL3_FlushChars();
++#endif
+ 	GL3_RenderView(fd);
+ 	GL3_SetLightLevel(NULL);
+ 	qboolean usedFBO = gl3state.ppFBObound; // if it was/is used this frame
+diff --git a/src/client/refresh/gl3/gl3_shaders.c b/src/client/refresh/gl3/gl3_shaders.c
+index 6d8a9cd..e2aff80 100644
+--- a/src/client/refresh/gl3/gl3_shaders.c
++++ b/src/client/refresh/gl3/gl3_shaders.c
+@@ -862,6 +862,29 @@ static const char* fragmentSrcAliasColor = MULTILINE_STRING(
+ 		}
+ );
+ 
++#ifdef YQ2_PS5
++static const char* vertexSrcParticles = MULTILINE_STRING(
++		uniform vec2 particleViewport;
++		out vec4 passColor;
++		out vec2 particleCoord;
++		void main()
++		{
++			passColor = vertColor;
++			vec4 center = transProjView * transModel * vec4(position, 1.0);
++			int corner = gl_VertexID;
++			if (corner == 3) corner = 2;
++			else if (corner == 4) corner = 1;
++			else if (corner == 5) corner = 3;
++			particleCoord = vec2(float(corner & 1), float(corner >> 1));
++			// Match the frozen native point-size range and center clipping.
++			float size = clamp(texCoord.x / max(texCoord.y * 0.1, 0.0001), 1.0, 64.0);
++			gl_Position = center;
++			gl_Position.xy += (particleCoord * 2.0 - 1.0) * size / particleViewport * center.w;
++			if (center.w <= 0.0 || any(greaterThan(abs(center.xyz), vec3(center.w))))
++				gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
++		}
++);
++#else
+ static const char* vertexSrcParticles = MULTILINE_STRING(
+ 
+ 		// it gets attributes and uniforms from vertexCommon3D
+@@ -879,8 +902,13 @@ static const char* vertexSrcParticles = MULTILINE_STRING(
+ 			gl_PointSize = texCoord.x/pointDist;
+ 		}
+ );
++#endif
+ 
+-static const char* fragmentSrcParticles = MULTILINE_STRING(
++static const char* fragmentSrcParticles =
++#ifdef YQ2_PS5
++	"in vec2 particleCoord;\n#define gl_PointCoord particleCoord\n"
++#endif
++MULTILINE_STRING(
+ 
+ 		// it gets attributes and uniforms from fragmentCommon3D
+ 
+diff --git a/src/client/refresh/gl3/gl3_surf.c b/src/client/refresh/gl3/gl3_surf.c
+index fc82dd5..fad8ad6 100644
+--- a/src/client/refresh/gl3/gl3_surf.c
++++ b/src/client/refresh/gl3/gl3_surf.c
+@@ -115,6 +115,12 @@ void GL3_SurfInit(void)
+ 
+ 	glEnableVertexAttribArray(GL3_ATTRIB_COLOR);
+ 	qglVertexAttribPointer(GL3_ATTRIB_COLOR, 4, GL_FLOAT, GL_FALSE, 9*sizeof(GLfloat), 5*sizeof(GLfloat));
++#ifdef YQ2_PS5
++	/* One particle per instance, six generated quad corners per instance. */
++	glVertexAttribDivisor(GL3_ATTRIB_POSITION, 1);
++	glVertexAttribDivisor(GL3_ATTRIB_TEXCOORD, 1);
++	glVertexAttribDivisor(GL3_ATTRIB_COLOR, 1);
++#endif
+ }
+ 
+ void GL3_SurfShutdown(void)
+@@ -289,7 +295,8 @@ UpdateLMscales(const hmm_vec4 lmScales[MAX_LIGHTMAPS_PER_SURFACE], gl3ShaderInfo
+ }
+ 
+ static void
+-RenderBrushPoly(entity_t *currententity, msurface_t *fa)
++RenderBrushPoly(entity_t *currententity, msurface_t *fa,
++                const gl3_3D_vtx_t *triangles, int numVertices)
+ {
+ 	int map;
+ 	gl3image_t *image;
+@@ -335,7 +342,16 @@ RenderBrushPoly(entity_t *currententity, msurface_t *fa)
+ 	{
+ 		GL3_UseProgram(gl3state.si3Dlm.shaderProgram);
+ 		UpdateLMscales(lmScales, &gl3state.si3Dlm);
+-		GL3_DrawGLPoly(fa);
++		if (triangles)
++		{
++			GL3_BindVAO(gl3state.vao3D);
++			GL3_BindVBO(gl3state.vbo3D);
++			GL3_BufferAndDraw3D(triangles, numVertices, GL_TRIANGLES);
++		}
++		else
++		{
++			GL3_DrawGLPoly(fa);
++		}
+ 	}
+ 
+ 	// Note: lightmap chains are gone, lightmaps are rendered together with normal texture in one pass
+@@ -400,6 +416,103 @@ GL3_DrawAlphaSurfaces(void)
+ 	gl3_alpha_surfaces = NULL;
+ }
+ 
++#ifdef YQ2_PS5
++/* Sort bounded runs of opaque faces before merging them. Special surfaces
++ * retain their position; equal material keys retain their original order. */
++typedef struct {
++	msurface_t *surface;
++	GLuint texture;
++	unsigned order;
++} ps5_surface_sort_t;
++
++static qboolean
++BatchableSurface(const msurface_t *s)
++{
++	return !(s->flags & SURF_DRAWTURB) &&
++	       !(s->texinfo->flags & (SURF_FLOWING | SURF_TRANS33 | SURF_TRANS66 | SURF_SKY | SURF_WARP));
++}
++
++static int
++CompareSurfaceMaterial(const void *left, const void *right)
++{
++	const ps5_surface_sort_t *a = left, *b = right;
++	if (a->texture != b->texture)
++		return a->texture < b->texture ? -1 : 1;
++	if (a->surface->lightmaptexturenum != b->surface->lightmaptexturenum)
++		return a->surface->lightmaptexturenum < b->surface->lightmaptexturenum ? -1 : 1;
++	int styles = memcmp(a->surface->styles, b->surface->styles, sizeof(a->surface->styles));
++	if (styles)
++		return styles;
++	return a->order < b->order ? -1 : a->order > b->order;
++}
++
++static void
++SortTextureChain(entity_t *entity, msurface_t **chain)
++{
++	ps5_surface_sort_t entries[1024];
++	while (*chain)
++	{
++		if (!BatchableSurface(*chain))
++		{
++			chain = &(*chain)->texturechain;
++			continue;
++		}
++		msurface_t *next = *chain;
++		unsigned count = 0;
++		while (next && count < ARRLEN(entries) && BatchableSurface(next))
++		{
++			entries[count] = (ps5_surface_sort_t){next,
++				R_TextureAnimation(entity, next->texinfo)->texnum, count};
++			++count;
++			next = next->texturechain;
++		}
++		qsort(entries, count, sizeof(entries[0]), CompareSurfaceMaterial);
++		*chain = entries[0].surface;
++		for (unsigned i = 1; i < count; ++i)
++			entries[i - 1].surface->texturechain = entries[i].surface;
++		entries[count - 1].surface->texturechain = next;
++		chain = &entries[count - 1].surface->texturechain;
++	}
++}
++
++/* Merge only adjacent opaque faces with identical material/light styles.
++ * Dynamic-light flags remain per vertex; flowing/water/alpha paths stay ordered. */
++static qboolean
++BatchTextureChain(entity_t *currententity, msurface_t **surface)
++{
++	static gl3_3D_vtx_t triangles[4095];
++	msurface_t *first = *surface, *last = NULL;
++	gl3image_t *image = R_TextureAnimation(currententity, first->texinfo);
++	int count = 0, faces = 0;
++	for (msurface_t *s = first; s; s = s->texturechain)
++	{
++		int n = s->polys->numverts;
++		if (!BatchableSurface(s) ||
++		    s->lightmaptexturenum != first->lightmaptexturenum ||
++		    memcmp(s->styles, first->styles, sizeof(s->styles)) ||
++		    R_TextureAnimation(currententity, s->texinfo) != image ||
++		    n < 3 || n > (int)ARRLEN(triangles) / 3 + 2 ||
++		    (n - 2) * 3 > (int)ARRLEN(triangles) - count)
++			break;
++		SetLightFlags(s);
++		for (int i = 2; i < n; ++i)
++		{
++			triangles[count++] = s->polys->vertices[0];
++			triangles[count++] = s->polys->vertices[i - 1];
++			triangles[count++] = s->polys->vertices[i];
++		}
++		last = s;
++		++faces;
++	}
++	if (!faces)
++		return false;
++	RenderBrushPoly(currententity, first, triangles, count);
++	c_brush_polys += faces - 1;
++	*surface = last;
++	return true;
++}
++#endif
++
+ static void
+ DrawTextureChains(entity_t *currententity)
+ {
+@@ -416,6 +529,9 @@ DrawTextureChains(entity_t *currententity)
+ 			continue;
+ 		}
+ 
++#ifdef YQ2_PS5
++		SortTextureChain(currententity, &image->texturechain);
++#endif
+ 		s = image->texturechain;
+ 
+ 		if (!s)
+@@ -427,8 +543,12 @@ DrawTextureChains(entity_t *currententity)
+ 
+ 		for ( ; s; s = s->texturechain)
+ 		{
++#ifdef YQ2_PS5
++			if (BatchTextureChain(currententity, &s))
++				continue;
++#endif
+ 			SetLightFlags(s);
+-			RenderBrushPoly(currententity, s);
++			RenderBrushPoly(currententity, s, NULL, 0);
+ 		}
+ 
+ 		image->texturechain = NULL;
+@@ -531,7 +651,7 @@ DrawInlineBModel(entity_t *currententity, gl3model_t *currentmodel)
+ 			}
+ 			else
+ 			{
+-				RenderBrushPoly(currententity, psurf);
++				RenderBrushPoly(currententity, psurf, NULL, 0);
+ 			}
+ 		}
+ 	}
+@@ -882,4 +1002,3 @@ GL3_MarkLeaves(void)
+ 		}
+ 	}
+ }
+-
+diff --git a/src/client/refresh/gl3/glad/include/glad/glad.h b/src/client/refresh/gl3/glad/include/glad/glad.h
+index 690d774..240aa2d 100644
+--- a/src/client/refresh/gl3/glad/include/glad/glad.h
++++ b/src/client/refresh/gl3/glad/include/glad/glad.h
+@@ -1830,6 +1830,11 @@ GLAPI int GLAD_GL_VERSION_3_1;
+ typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
+ GLAPI PFNGLDRAWARRAYSINSTANCEDPROC glad_glDrawArraysInstanced;
+ #define glDrawArraysInstanced glad_glDrawArraysInstanced
++#ifdef YQ2_PS5
++typedef void (APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC)(GLuint index, GLuint divisor);
++GLAPI PFNGLVERTEXATTRIBDIVISORPROC glad_glVertexAttribDivisor;
++#define glVertexAttribDivisor glad_glVertexAttribDivisor
++#endif
+ typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount);
+ GLAPI PFNGLDRAWELEMENTSINSTANCEDPROC glad_glDrawElementsInstanced;
+ #define glDrawElementsInstanced glad_glDrawElementsInstanced
+diff --git a/src/client/refresh/gl3/glad/src/glad.c b/src/client/refresh/gl3/glad/src/glad.c
+index b085cd8..d6ac587 100644
+--- a/src/client/refresh/gl3/glad/src/glad.c
++++ b/src/client/refresh/gl3/glad/src/glad.c
+@@ -204,6 +204,9 @@ PFNGLDISABLEVERTEXATTRIBARRAYPROC glad_glDisableVertexAttribArray = NULL;
+ PFNGLDISABLEIPROC glad_glDisablei = NULL;
+ PFNGLDRAWARRAYSPROC glad_glDrawArrays = NULL;
+ PFNGLDRAWARRAYSINSTANCEDPROC glad_glDrawArraysInstanced = NULL;
++#ifdef YQ2_PS5
++PFNGLVERTEXATTRIBDIVISORPROC glad_glVertexAttribDivisor = NULL;
++#endif
+ PFNGLDRAWBUFFERPROC glad_glDrawBuffer = NULL;
+ PFNGLDRAWBUFFERSPROC glad_glDrawBuffers = NULL;
+ PFNGLDRAWELEMENTSPROC glad_glDrawElements = NULL;
+@@ -894,9 +897,12 @@ int gladLoadGLLoader(GLADloadproc load) {
+ 	load_GL_VERSION_3_0(load);
+ 	load_GL_VERSION_3_1(load);
+ 	load_GL_VERSION_3_2(load);
++#ifdef YQ2_PS5
++	/* Yamagi's generated loader stops at 3.2; the native context requires 3.3. */
++	glad_glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)load("glVertexAttribDivisor");
++#endif
+ 
+ 	if (!find_extensionsGL()) return 0;
+ 	load_GL_ARB_debug_output(load);
+ 	return GLVersion.major != 0 || GLVersion.minor != 0;
+ }
+-
+diff --git a/src/client/refresh/gl3/header/local.h b/src/client/refresh/gl3/header/local.h
+index a32b88d..430ff28 100644
+--- a/src/client/refresh/gl3/header/local.h
++++ b/src/client/refresh/gl3/header/local.h
+@@ -558,3 +558,7 @@ extern cvar_t *r_validation;
+ extern cvar_t *gl3_debugcontext;
+ 
+ #endif /* SRC_CLIENT_REFRESH_GL3_HEADER_LOCAL_H_ */
++
++#ifdef YQ2_PS5
++void GL3_FlushChars(void);
++#endif
+diff --git a/src/client/refresh/ref_shared.h b/src/client/refresh/ref_shared.h
+index 8830815..1857bd7 100644
+--- a/src/client/refresh/ref_shared.h
++++ b/src/client/refresh/ref_shared.h
+@@ -27,6 +27,14 @@
+ #ifndef SRC_CLIENT_REFRESH_REF_SHARED_H_
+ #define SRC_CLIENT_REFRESH_REF_SHARED_H_
+ 
++#ifdef YQ2_PS5
++#define Com_DPrintf YQ2_Ref_Com_DPrintf
++#define Com_Error YQ2_Ref_Com_Error
++#define Com_Printf YQ2_Ref_Com_Printf
++#define modes YQ2_Ref_modes
++#define vid_fullscreen YQ2_Ref_vid_fullscreen
++#define vid_gamma YQ2_Ref_vid_gamma
++#endif
+ #include "../vid/header/ref.h"
+ 
+ #ifdef _MSC_VER
+diff --git a/src/client/sound/sdl.c b/src/client/sound/sdl.c
+index b99fa8d..38d3c86 100644
+--- a/src/client/sound/sdl.c
++++ b/src/client/sound/sdl.c
+@@ -57,6 +57,9 @@ static sound_t *backend;
+ static portable_samplepair_t paintbuffer[SDL_PAINTBUFFER_SIZE];
+ static int beginofs;
+ static int playpos = 0;
++#ifdef YQ2_PS5
++static uint64_t played_samples;
++#endif
+ static int samplesize = 0;
+ static int snd_inited = 0;
+ static int snd_scaletable[32][256];
+@@ -859,6 +862,17 @@ SDL_ClearBuffer(void)
+ static void
+ SDL_UpdateSoundtime(void)
+ {
++#ifdef YQ2_PS5
++	/* Callback consumption remains accurate across multiple ring wraps while
++	 * a slow frame or map load prevents the mixer from running. Audio is locked. */
++	if (played_samples / sound.channels > 0x40000000) {
++		played_samples = playpos;
++		paintedtime = sound.samples / sound.channels;
++		S_StopAllSounds();
++	}
++	soundtime = played_samples / sound.channels;
++#else
++
+ 	static int buffers;
+ 	static int oldsamplepos;
+ 	int fullsamples;
+@@ -882,6 +896,7 @@ SDL_UpdateSoundtime(void)
+ 
+ 	oldsamplepos = playpos;
+ 	soundtime = buffers * fullsamples + playpos / sound.channels;
++#endif
+ }
+ 
+ /*
+@@ -1305,6 +1320,11 @@ SDL_Callback(void *data, Uint8 *stream, int length)
+ 	}
+ 
+ 	memcpy(stream, backend->buffer + pos, length1);
++#ifdef YQ2_PS5
++	/* Consumed PCM must not repeat when the producer misses a ring cycle. */
++	memset(backend->buffer + pos, backend->samplebits == 8 ? 128 : 0, length1);
++	played_samples += length / (backend->samplebits / 8);
++#endif
+ 
+ 	/* Set new position */
+ 	if (length2 <= 0)
+@@ -1314,6 +1334,9 @@ SDL_Callback(void *data, Uint8 *stream, int length)
+ 	else
+ 	{
+ 		memcpy(stream + length1, backend->buffer, length2);
++#ifdef YQ2_PS5
++		memset(backend->buffer, backend->samplebits == 8 ? 128 : 0, length2);
++#endif
+ 		playpos = (length2 / (backend->samplebits / 8));
+ 	}
+ 
+@@ -1458,6 +1481,9 @@ SDL_BackendInit(void)
+ 	backend = &sound;
+ 
+ 	playpos = 0;
++#ifdef YQ2_PS5
++	played_samples = 0;
++#endif
+ 	backend->samplebits = spec.format & 0xFF;
+ 	backend->channels = spec.channels;
+ 
+@@ -1622,6 +1648,9 @@ SDL_BackendInit(void)
+ 	backend = &sound;
+ 
+ 	playpos = 0;
++#ifdef YQ2_PS5
++	played_samples = 0;
++#endif
+ 	backend->samplebits = spec.format & 0xFF;
+ 	backend->channels = spec.channels;
+ 
+diff --git a/src/client/vid/vid.c b/src/client/vid/vid.c
+index 6768cef..cacae58 100644
+--- a/src/client/vid/vid.c
++++ b/src/client/vid/vid.c
+@@ -328,6 +328,9 @@ VID_GetRendererLibPath(const char *renderer, char *path, size_t len)
+ qboolean
+ VID_HasRenderer(const char *renderer)
+ {
++#ifdef YQ2_PS5
++	return strcmp(renderer, "gl3") == 0;
++#else
+ 	char reflib_path[MAX_OSPATH] = {0};
+ 	VID_GetRendererLibPath(renderer, reflib_path, sizeof(reflib_path));
+ 
+@@ -337,6 +340,7 @@ VID_HasRenderer(const char *renderer)
+ 	}
+ 
+ 	return false;
++#endif
+ }
+ 
+ /*
+@@ -403,6 +407,11 @@ VID_LoadRenderer(void)
+ 	// Log what we're doing.
+ 	Com_Printf("----- refresher initialization -----\n");
+ 
++#ifdef YQ2_PS5
++	extern refexport_t PS5_GetRefAPI(refimport_t);
++	GetRefAPI = PS5_GetRefAPI;
++	Q_strlcpy(reflib_name, "static ref_gl3", sizeof(reflib_name));
++#else
+ 	snprintf(reflib_name, sizeof(reflib_name), "ref_%s.%s", vid_renderer->string, lib_ext);
+ 	VID_GetRendererLibPath(vid_renderer->string, reflib_path, sizeof(reflib_path));
+ 	Com_Printf("Loading library: %s\n", reflib_name);
+@@ -426,6 +435,7 @@ VID_LoadRenderer(void)
+ 
+ 		return false;
+ 	}
++#endif
+ 
+ 	// Fill in the struct exported to the renderer.
+ 	// FIXME: Do we really need all these?
+@@ -535,6 +545,9 @@ VID_CheckChanges(void)
+ 		// Mkay, let's try our luck.
+ 		while (!VID_LoadRenderer())
+ 		{
++#ifdef YQ2_PS5
++			Com_Error(ERR_FATAL, "PS5 GL3 renderer initialization failed\n");
++#endif
+ 			// We try: custom -> gl3 -> gles3 -> gl1 -> gles1 -> soft.
+ 			if ((strcmp(vid_renderer->string, "gl3") != 0) &&
+ 				(strcmp(vid_renderer->string, "gles3") != 0) &&
+diff --git a/src/common/frame.c b/src/common/frame.c
+index 8db3492..b653a18 100644
+--- a/src/common/frame.c
++++ b/src/common/frame.c
+@@ -26,6 +26,9 @@
+ 
+ #include "header/common.h"
+ #include <setjmp.h>
++#ifdef YQ2_PS5
++#include "ps5_lifecycle.h"
++#endif
+ 
+ cvar_t *developer;
+ cvar_t *modder;
+@@ -173,6 +176,10 @@ Qcommon_Mainloop(void)
+ 	/* The mainloop. The legend. */
+ 	while (1)
+ 	{
++#ifdef YQ2_PS5
++		if (ps5_frame_should_quit())
++			Com_Quit();
++#endif
+ #ifndef DEDICATED_ONLY
+ 		if (!cl_timedemo->value)
+ 		{
+diff --git a/src/game/header/local.h b/src/game/header/local.h
+index 80255d3..57b33c7 100644
+--- a/src/game/header/local.h
++++ b/src/game/header/local.h
+@@ -27,6 +27,12 @@
+ #ifndef GAME_LOCAL_H
+ #define GAME_LOCAL_H
+ 
++#ifdef YQ2_PS5
++#define Com_Printf YQ2_Game_Com_Printf
++#define Sys_Error YQ2_Game_Sys_Error
++#define dedicated YQ2_Game_dedicated
++#define maxclients YQ2_Game_maxclients
++#endif
+ #include "../../common/header/shared.h"
+ 
+ /* define GAME_INCLUDE so that game.h does not define the
+diff --git a/src/server/sv_save.c b/src/server/sv_save.c
+index 7132355..fded844 100644
+--- a/src/server/sv_save.c
++++ b/src/server/sv_save.c
+@@ -162,7 +162,9 @@ void
+ SV_WriteLevelFile(void)
+ {
+ 	char name[MAX_OSPATH];
++#ifndef YQ2_PS5
+ 	char workdir[MAX_OSPATH];
++#endif
+ 	FILE *f;
+ 
+ 	Com_DPrintf("SV_WriteLevelFile()\n");
+@@ -181,6 +183,11 @@ SV_WriteLevelFile(void)
+ 	CM_WritePortalState(f);
+ 	fclose(f);
+ 
++#ifdef YQ2_PS5
++	/* The static game accepts absolute paths; native cwd imports are unavailable. */
++	Com_sprintf(name, sizeof(name), "%s/save/current/%s.sav", FS_Gamedir(), sv.name);
++	ge->WriteLevel(name);
++#else
+ 	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
+ 	Sys_GetWorkDir(workdir, sizeof(workdir));
+ 	Sys_Mkdir(name);
+@@ -196,6 +203,7 @@ SV_WriteLevelFile(void)
+ 	ge->WriteLevel(name);
+ 
+ 	Sys_SetWorkDir(workdir);
++#endif
+ }
+ 
+ static void
+@@ -220,7 +228,9 @@ void
+ SV_ReadLevelFile(void)
+ {
+ 	char name[MAX_OSPATH];
++#ifndef YQ2_PS5
+ 	char workdir[MAX_OSPATH];
++#endif
+ 	fileHandle_t f;
+ 
+ 	Com_DPrintf("SV_ReadLevelFile()\n");
+@@ -238,6 +248,10 @@ SV_ReadLevelFile(void)
+ 	CM_ReadPortalState(f);
+ 	FS_FCloseFile(f);
+ 
++#ifdef YQ2_PS5
++	Com_sprintf(name, sizeof(name), "%s/save/current/%s.sav", FS_Gamedir(), sv.name);
++	ge->ReadLevel(name);
++#else
+ 	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
+ 	Sys_GetWorkDir(workdir, sizeof(workdir));
+ 
+@@ -252,6 +266,7 @@ SV_ReadLevelFile(void)
+ 	ge->ReadLevel(name);
+ 
+ 	Sys_SetWorkDir(workdir);
++#endif
+ }
+ 
+ void
+@@ -260,7 +275,9 @@ SV_WriteServerFile(qboolean autosave)
+ 	FILE *f;
+ 	cvar_t *var;
+ 	char name[MAX_OSPATH], string[128];
++#ifndef YQ2_PS5
+ 	char workdir[MAX_OSPATH];
++#endif
+ 	char comment[32];
+ 	time_t aclock;
+ 	struct tm *newtime;
+@@ -329,6 +346,10 @@ SV_WriteServerFile(qboolean autosave)
+ 	fclose(f);
+ 
+ 	/* write game state */
++#ifdef YQ2_PS5
++	Com_sprintf(name, sizeof(name), "%s/save/current/game.ssv", FS_Gamedir());
++	ge->WriteGame(name, autosave);
++#else
+ 	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
+ 	Sys_GetWorkDir(workdir, sizeof(workdir));
+ 	Sys_Mkdir(name);
+@@ -343,6 +364,7 @@ SV_WriteServerFile(qboolean autosave)
+ 	ge->WriteGame("game.ssv", autosave);
+ 
+ 	Sys_SetWorkDir(workdir);
++#endif
+ }
+ 
+ static void
+@@ -350,7 +372,9 @@ SV_ReadServerFile(void)
+ {
+ 	fileHandle_t f;
+ 	char name[MAX_OSPATH], string[128];
++#ifndef YQ2_PS5
+ 	char workdir[MAX_OSPATH];
++#endif
+ 	char comment[32];
+ 	char mapcmd[MAX_SAVE_TOKEN_CHARS];
+ 
+@@ -395,6 +419,10 @@ SV_ReadServerFile(void)
+ 	strcpy(svs.mapcmd, mapcmd);
+ 
+ 	/* read game state */
++#ifdef YQ2_PS5
++	Com_sprintf(name, sizeof(name), "%s/save/current/game.ssv", FS_Gamedir());
++	ge->ReadGame(name);
++#else
+ 	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
+ 	Sys_GetWorkDir(workdir, sizeof(workdir));
+ 
+@@ -408,6 +436,7 @@ SV_ReadServerFile(void)
+ 	ge->ReadGame("game.ssv");
+ 
+ 	Sys_SetWorkDir(workdir);
++#endif
+ }
+ 
+ void
+@@ -525,4 +554,3 @@ SV_Savegame_f(void)
+ 
+ 	Com_Printf("Done.\n");
+ }
+-

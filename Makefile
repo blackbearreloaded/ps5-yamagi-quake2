@@ -1,0 +1,48 @@
+SHELL := bash
+.DEFAULT_GOAL := help
+
+PS5_NATIVE_APP_TEMPLATE ?= $(abspath .deps/native-app)
+PS5_PAYLOAD_SDK ?= $(PS5_NATIVE_APP_TEMPLATE)/.deps/native/ps5-payload-sdk
+PS5_OPENGL_PREFIX ?= $(abspath .deps/game-sdk)
+export PS5_NATIVE_APP_TEMPLATE PS5_PAYLOAD_SDK PS5_OPENGL_PREFIX
+
+.PHONY: help deps check smoke contract test native app package
+help:
+	@printf '%s\n' 'check: verify the frozen SDK, source pin and native helper bytes (offline)' \
+	  'smoke: compile/link the existing EGL/OpenGL consumer and compile native helpers (offline)' \
+	  'native: build the staged Yamagi PS5 app with static GL3/EGL and PacBrew SDL2.'
+	@printf '%s\n' 'deps: restore pinned build dependencies' 'test: run host regressions (no game data required)' 'package: build a game-data-free release ZIP'
+
+deps:
+	python3 tools/bootstrap.py
+
+check:
+	bash tools/check.sh
+
+smoke: check
+	$(MAKE) --no-print-directory -f tests/Makefile
+
+test: contract
+
+contract:
+	python3 tests/ps5_contract.py
+	python3 tests/test_lifecycle.py
+	python3 tests/test_video_size.py
+	python3 tests/test_game_data.py
+	python3 tests/test_realpath.py
+	python3 tests/test_native_resolver.py
+	python3 tests/test_input_saves.py
+	python3 tests/test_fps_profile.py
+	python3 tests/test_triangle_path.py
+	python3 tests/test_particles.py
+	python3 tests/test_menu_audio.py
+	python3 tests/check_gamepad_defaults.py
+	python3 tests/test_package.py
+
+app: native
+
+native: check contract
+	bash tools/build-ps5.sh
+
+package: native
+	python3 tools/package.py

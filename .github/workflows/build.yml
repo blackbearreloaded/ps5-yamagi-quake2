@@ -1,0 +1,38 @@
+name: Build
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install host dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang libsdl2-dev libegl1-mesa-dev libgl1-mesa-dri glslang-tools
+      - run: python3 tools/bootstrap.py --host-only
+      - run: make test
+  native:
+    if: github.event_name == 'workflow_dispatch'
+    needs: host
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential clang-18 lld-18 llvm-18 make python3 git gh pkg-config wget unzip libssl-dev libsdl2-dev libegl1-mesa-dev libgl1-mesa-dri glslang-tools
+      - run: make deps
+      - run: make package
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: PPSA99007-1080p
+          path: |
+            dist/PPSA99007.zip
+            dist/PPSA99007.zip.sha256
+          if-no-files-found: error

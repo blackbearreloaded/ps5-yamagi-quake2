@@ -1,0 +1,12 @@
+* text=auto eol=lf
+# Preserve the exact bytes of the frozen, copied OpenGL integration helpers.
+tooling/native/*.c -text
+tooling/native/*.ld -text
+tooling/native/*.map -text
+sce_sys/param.json -text
+tests/sdk_consumer.c -text
+*.png binary
+*.dds binary
+*.at9 binary
+*.patch -whitespace
+LICENSES/* -whitespace

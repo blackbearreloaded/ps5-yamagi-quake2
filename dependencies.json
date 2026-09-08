@@ -1,0 +1,38 @@
+{
+  "yamagi": {
+    "url": "https://github.com/yquake2/yquake2.git",
+    "revision": "76e81f9f3fc3ed859006d81904bfeb6cb33fb525",
+    "directory": "upstream/yquake2"
+  },
+  "native_app": {
+    "url": "https://github.com/blackbearreloaded/ps5-native-app-boilerplate.git",
+    "revision": "4e1d1277dd0531a9a9df8c780e446b9cc26534dd",
+    "directory": ".deps/native-app"
+  },
+  "game_sdk": {
+    "repository": "blackbearreloaded/ps5-yamagi-quake2",
+    "tag": "v0.1.0-alpha.1",
+    "asset": "ps5-yamagi-runtime-overlay-v0.1.0-alpha.1.tar.gz",
+    "sha256": "2a5c952bb3fda49de2d8e6b19944bae956666f83cf2091f945d4461f39557eed",
+    "manifest_sha256": "4a3f0b68f33a051d2c2efe108c6efe10ded1b8c584e8250852c09fd5cdf6eb9e",
+    "runtime_sha256": "ca7298b024974bd26eb9456964c220db90b17a774eacf8d114fe3d5de4bbb888",
+    "base_source": "cef6c1b869ba3f0c8acaab5b171bbb33eca07f03",
+    "resolution": "1920x1080"
+  },
+  "pacbrew": {
+    "tag": "v0.40.2",
+    "sha256": "a85f65de418a8e6a898c6c3e3c870d50fff7618a200e4dd59ea9692af6ecec4d"
+  },
+  "public_sdk": {
+    "tag": "v0.42",
+    "sha256": "8cfbc7cd5811e719eb4f0c47eea668d3dc7b40bc8ab11c4a5031d40c23ec02da"
+  },
+  "opengl": {
+    "repository": "blackbearreloaded/ps5-opengl",
+    "tag": "v0.1.0-perf20260907-sampled",
+    "asset": "ps5-opengl-sdk-0.1.0-perf20260907-sampled.tar.gz",
+    "sha256": "1e7d9cd3c4355e8d43c3f1697867e95c04cb7f641fa61cfd4e371857a0b2b6a8",
+    "directory": "ps5-opengl-sdk-0.1.0-perf20260907-sampled",
+    "manifest_sha256": "03e535ec8853475385034759e7bc7e63b37ef275591912e3391669b027bd09fc"
+  }
+}
