@@ -183,3 +183,5 @@ Project code is GPL-3.0-or-later; upstream components retain their own licenses.
 See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
 Quake II game data and trademarks belong to their respective owners. This is
 an unofficial port and is not affiliated with id Software, Bethesda or Sony.
+
+This project was developed with assistance from OpenAI Codex, including some original interface artwork. Project maintainers reviewed and validated the resulting code, tests, documentation, dependencies, and generated assets.
