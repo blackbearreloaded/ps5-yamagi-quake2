@@ -8,7 +8,7 @@ patch_file="$root/patches/0001-ps5-static-gl3-lifecycle.patch"
 # Build in an isolated stage; dependencies and the upstream checkout stay intact.
 stage="$root/build/ps5-native-fixed"
 
-[[ -f "$template/Makefile" && -x "$template/tools/build.sh" ]] || {
+[[ -f "$template/Makefile" && -f "$template/tools/build.sh" ]] || {
 	printf 'missing PS5 native-app boilerplate: %s\n' "$template" >&2
 	exit 2
 }
@@ -31,7 +31,7 @@ for directory in assets runtime sce_sys tooling tools; do
 	cp -a "$template/$directory/." "$stage/$directory/"
 done
 # The tested RELRO alignment fix is kept here until published upstream.
-(cd "$stage" && git apply "$root/patches/0003-native-relro-alignment.patch")
+(cd "$stage" && patch --batch --fuzz=0 -p1 -i "$root/patches/0003-native-relro-alignment.patch")
 # Import stubs below must be written only into this build's own SDK copy.
 cp -a "$template/.deps/native" "$stage/.deps/native"
 mkdir -p "$root/.deps/pacbrew"
