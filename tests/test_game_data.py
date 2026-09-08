@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+# Copyright (C) 2026 BlackBearReloaded
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Small regression check for PACK bounds and required startup assets."""
 from pathlib import Path
 import struct

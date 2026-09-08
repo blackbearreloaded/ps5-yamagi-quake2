@@ -1,7 +1,28 @@
+<!--
+PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+Copyright (C) 2026 BlackBearReloaded
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # Third-party notices
 
 Project-owned code is GPL-3.0-or-later. Upstream components retain their original
 per-file notices and licenses; this repository does not relicense game data.
+
+The PS5 port is maintained by [BlackBearReloaded](https://github.com/blackbearreloaded).
+Original port code, build tools, tests and documentation carry project headers
+with `Copyright (C) 2026 BlackBearReloaded` and `GPL-3.0-or-later` identifiers.
+PS5 adaptations of Yamagi platform files preserve the upstream copyright and
+GPL-2.0-or-later notice alongside a scoped PS5 contribution notice. The patches
+also insert contribution notices into the files they modify, without replacing
+upstream notices or claiming ownership of dependencies. These notices do not
+change the licenses of the existing upstream files.
+
+The copied helpers in `tooling/native/` and `tests/sdk_consumer.c` come from
+BlackBearReloaded's PS5 OpenGL/native app projects. JSON metadata uses adjacent
+`.license` sidecars because JSON cannot contain comments. Binary presentation
+assets, original license texts and dependency archives are not covered by the
+source-file headers; their notices and terms remain as described below.
 
 | Component | Source / license |
 | --- | --- |

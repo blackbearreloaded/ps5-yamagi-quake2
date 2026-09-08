@@ -1,8 +1,22 @@
+PS5 Yamagi Quake II - PS5 contribution patch.
+Copyright (C) 2026 BlackBearReloaded (PS5 contributions only).
+Upstream context retains its original copyright and license notices.
+
 diff --git a/src/backends/generic/misc.c b/src/backends/generic/misc.c
-index d9acea5..aa0929c 100644
+index d9acea5..5f416ca 100644
 --- a/src/backends/generic/misc.c
 +++ b/src/backends/generic/misc.c
-@@ -174,6 +174,9 @@ Sys_GetCwd(char *buf, size_t size)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -174,6 +180,9 @@ Sys_GetCwd(char *buf, size_t size)
  
  const char *Sys_GetBinaryDir(void)
  {
@@ -12,7 +26,7 @@ index d9acea5..aa0929c 100644
  	static char exeDir[PATH_MAX] = {0};
  
  	if(exeDir[0] != '\0') {
-@@ -200,6 +203,7 @@ const char *Sys_GetBinaryDir(void)
+@@ -200,6 +209,7 @@ const char *Sys_GetBinaryDir(void)
  	}
  
  	return exeDir;
@@ -21,10 +35,20 @@ index d9acea5..aa0929c 100644
  
  #if defined (__GNUC__) && (__i386 || __x86_64__)
 diff --git a/src/backends/unix/network.c b/src/backends/unix/network.c
-index c89637e..a139020 100644
+index c89637e..5559c87 100644
 --- a/src/backends/unix/network.c
 +++ b/src/backends/unix/network.c
-@@ -44,6 +44,10 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -44,6 +50,10 @@
  #include <arpa/inet.h>
  #include <net/if.h>
  
@@ -36,10 +60,20 @@ index c89637e..a139020 100644
  
  #define LOOPBACK 0x7f000001
 diff --git a/src/backends/unix/system.c b/src/backends/unix/system.c
-index afb0e32..cac4938 100644
+index afb0e32..301f1b6 100644
 --- a/src/backends/unix/system.c
 +++ b/src/backends/unix/system.c
-@@ -27,6 +27,7 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -27,6 +33,7 @@
  #include <dirent.h>
  #include <dlfcn.h>
  #include <fcntl.h>
@@ -47,7 +81,7 @@ index afb0e32..cac4938 100644
  #include <stdlib.h>
  #include <stdarg.h>
  #include <stdio.h>
-@@ -47,6 +48,9 @@
+@@ -47,6 +54,9 @@
  
  #include "../../common/header/common.h"
  #include "../../common/header/glob.h"
@@ -57,7 +91,7 @@ index afb0e32..cac4938 100644
  
  // Pointer to game library
  static void *game_library;
-@@ -96,7 +100,11 @@ Sys_Error(const char *error, ...)
+@@ -96,7 +106,11 @@ Sys_Error(const char *error, ...)
  	va_end(argptr);
  	fprintf(stderr, "Error: %s\n", string);
  
@@ -69,7 +103,7 @@ index afb0e32..cac4938 100644
  }
  
  void
-@@ -121,7 +129,11 @@ Sys_Quit(void)
+@@ -121,7 +135,11 @@ Sys_Quit(void)
  
  	printf("------------------------------------\n");
  
@@ -81,7 +115,7 @@ index afb0e32..cac4938 100644
  }
  
  void
-@@ -420,6 +432,10 @@ Sys_UnloadGame(void)
+@@ -420,6 +438,10 @@ Sys_UnloadGame(void)
  void *
  Sys_GetGameAPI(void *parms)
  {
@@ -92,7 +126,7 @@ index afb0e32..cac4938 100644
  	typedef void *(*fnAPI)(void *);
  	fnAPI GetGameAPI;
  
-@@ -507,6 +523,7 @@ Sys_GetGameAPI(void *parms)
+@@ -507,6 +529,7 @@ Sys_GetGameAPI(void *parms)
  	}
  
  	return GetGameAPI(parms);
@@ -100,7 +134,7 @@ index afb0e32..cac4938 100644
  }
  
  /* ================================================================ */
-@@ -648,6 +665,26 @@ Sys_RemoveDir(const char *path)
+@@ -648,6 +671,26 @@ Sys_RemoveDir(const char *path)
  qboolean
  Sys_Realpath(const char *in, char *out, size_t size)
  {
@@ -127,7 +161,7 @@ index afb0e32..cac4938 100644
  	char *converted = realpath(in, NULL);
  
  	if (converted == NULL)
-@@ -660,6 +697,7 @@ Sys_Realpath(const char *in, char *out, size_t size)
+@@ -660,6 +703,7 @@ Sys_Realpath(const char *in, char *out, size_t size)
  	free(converted);
  
  	return true;
@@ -136,10 +170,20 @@ index afb0e32..cac4938 100644
  
  /* ================================================================ */
 diff --git a/src/client/cl_image.c b/src/client/cl_image.c
-index 1de83dc..581f0e5 100644
+index 1de83dc..25c3682 100644
 --- a/src/client/cl_image.c
 +++ b/src/client/cl_image.c
-@@ -31,6 +31,9 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -31,6 +37,9 @@
  // don't need HDR stuff
  #define STBI_NO_LINEAR
  #define STBI_NO_HDR
@@ -150,10 +194,20 @@ index 1de83dc..581f0e5 100644
  #define STBI_MALLOC(sz)    malloc(sz)
  #define STBI_REALLOC(p,sz) realloc(p,sz)
 diff --git a/src/client/cl_screen.c b/src/client/cl_screen.c
-index 33b0a84..043067f 100644
+index 33b0a84..91ff288 100644
 --- a/src/client/cl_screen.c
 +++ b/src/client/cl_screen.c
-@@ -1555,6 +1555,30 @@ SCR_DrawSpeed(void)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -1555,6 +1561,30 @@ SCR_DrawSpeed(void)
  static void
  SCR_Framecounter(void)
  {
@@ -184,7 +238,7 @@ index 33b0a84..043067f 100644
  	long long newtime;
  	static int frame;
  	static int frametimes[60] = {0};
-@@ -1643,6 +1667,7 @@ SCR_Framecounter(void)
+@@ -1643,6 +1673,7 @@ SCR_Framecounter(void)
  			SCR_AddDirtyPoint(viddef.width, scale + 10);
  		}
  	}
@@ -193,10 +247,20 @@ index 33b0a84..043067f 100644
  
  // ----
 diff --git a/src/client/input/sdl2.c b/src/client/input/sdl2.c
-index c280a4f..30503d3 100644
+index c280a4f..1b67682 100644
 --- a/src/client/input/sdl2.c
 +++ b/src/client/input/sdl2.c
-@@ -36,6 +36,11 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 2010 Yamagi Burmeister
+  * Copyright (C) 1997-2005 Id Software, Inc.
+@@ -36,6 +42,11 @@
  
  #include <SDL2/SDL.h>
  
@@ -208,7 +272,7 @@ index c280a4f..30503d3 100644
  #include "header/input.h"
  #include "header/gyro.h"
  #include "../header/keyboard.h"
-@@ -2936,6 +2941,11 @@ IN_Init(void)
+@@ -2936,6 +2947,11 @@ IN_Init(void)
  
  	IN_Controller_Init(false);
  
@@ -220,7 +284,7 @@ index c280a4f..30503d3 100644
  	Com_Printf("------------------------------------\n\n");
  }
  
-@@ -2992,6 +3002,9 @@ IN_Shutdown(void)
+@@ -2992,6 +3008,9 @@ IN_Shutdown(void)
  
  	Com_Printf("Shutting down input.\n");
  
@@ -231,10 +295,20 @@ index c280a4f..30503d3 100644
  
  	const Uint32 subsystems = SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC;
 diff --git a/src/client/refresh/files/common.c b/src/client/refresh/files/common.c
-index eba3fd3..190ee95 100644
+index eba3fd3..78de18a 100644
 --- a/src/client/refresh/files/common.c
 +++ b/src/client/refresh/files/common.c
-@@ -41,6 +41,7 @@ R_Printf(int level, const char* msg, ...)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -41,6 +47,7 @@ R_Printf(int level, const char* msg, ...)
  	va_end(argptr);
  }
  
@@ -242,7 +316,7 @@ index eba3fd3..190ee95 100644
  void
  Sys_Error(const char *error, ...)
  {
-@@ -53,6 +54,7 @@ Sys_Error(const char *error, ...)
+@@ -53,6 +60,7 @@ Sys_Error(const char *error, ...)
  
  	ri.Sys_Error(ERR_FATAL, "%s", text);
  }
@@ -251,10 +325,20 @@ index eba3fd3..190ee95 100644
  void
  Com_Printf(const char *msg, ...)
 diff --git a/src/client/refresh/gl3/gl3_draw.c b/src/client/refresh/gl3/gl3_draw.c
-index bd53035..153c637 100644
+index bd53035..b90f382 100644
 --- a/src/client/refresh/gl3/gl3_draw.c
 +++ b/src/client/refresh/gl3/gl3_draw.c
-@@ -33,6 +33,35 @@ gl3image_t *draw_chars;
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2016-2017 Daniel Gibson
+@@ -33,6 +39,35 @@ gl3image_t *draw_chars;
  
  static GLuint vbo2D = 0, vao2D = 0, vao2Dcolor = 0; // vao2D is for textured rendering, vao2Dcolor for color-only
  
@@ -290,7 +374,7 @@ index bd53035..153c637 100644
  void
  GL3_Draw_InitLocal(void)
  {
-@@ -79,6 +108,9 @@ GL3_Draw_InitLocal(void)
+@@ -79,6 +114,9 @@ GL3_Draw_InitLocal(void)
  void
  GL3_Draw_ShutdownLocal(void)
  {
@@ -300,7 +384,7 @@ index bd53035..153c637 100644
  	glDeleteBuffers(1, &vbo2D);
  	vbo2D = 0;
  	glDeleteVertexArrays(1, &vao2D);
-@@ -102,11 +134,13 @@ drawTexturedRectangle(float x, float y, float w, float h,
+@@ -102,11 +140,13 @@ drawTexturedRectangle(float x, float y, float w, float h,
  	 *  x,y        x+w,y
  	 */
  
@@ -315,7 +399,7 @@ index bd53035..153c637 100644
  		x+w, y,   sh, tl
  	};
  
-@@ -117,7 +151,7 @@ drawTexturedRectangle(float x, float y, float w, float h,
+@@ -117,7 +157,7 @@ drawTexturedRectangle(float x, float y, float w, float h,
  	GL3_BindVBO(vbo2D);
  	glBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
  
@@ -324,7 +408,7 @@ index bd53035..153c637 100644
  
  	//glMultiDrawArrays(mode, first, count, drawcount) ??
  }
-@@ -153,11 +187,16 @@ GL3_Draw_CharScaled(int x, int y, int num, float scale)
+@@ -153,11 +193,16 @@ GL3_Draw_CharScaled(int x, int y, int num, float scale)
  
  	scaledSize = 8*scale;
  
@@ -341,7 +425,7 @@ index bd53035..153c637 100644
  }
  
  gl3image_t *
-@@ -186,6 +225,9 @@ GL3_Draw_GetPicSize(int *w, int *h, const char *pic)
+@@ -186,6 +231,9 @@ GL3_Draw_GetPicSize(int *w, int *h, const char *pic)
  void
  GL3_Draw_StretchPic(int x, int y, int w, int h, const char *pic)
  {
@@ -351,7 +435,7 @@ index bd53035..153c637 100644
  	gl3image_t *gl = R_FindPic(pic, (findimage_t)GL3_FindImage);
  
  	if (!gl)
-@@ -203,6 +245,9 @@ GL3_Draw_StretchPic(int x, int y, int w, int h, const char *pic)
+@@ -203,6 +251,9 @@ GL3_Draw_StretchPic(int x, int y, int w, int h, const char *pic)
  void
  GL3_Draw_PicScaled(int x, int y, const char *pic, float factor)
  {
@@ -361,7 +445,7 @@ index bd53035..153c637 100644
  	gl3image_t *gl = R_FindPic(pic, (findimage_t)GL3_FindImage);
  	if (!gl)
  	{
-@@ -219,6 +264,9 @@ GL3_Draw_PicScaled(int x, int y, const char *pic, float factor)
+@@ -219,6 +270,9 @@ GL3_Draw_PicScaled(int x, int y, const char *pic, float factor)
  void
  GL3_Draw_PicScaledCol(int x, int y, const char *pic, float factor, const float color[3])
  {
@@ -371,7 +455,7 @@ index bd53035..153c637 100644
  	gl3image_t *gl = R_FindPic(pic, (findimage_t)GL3_FindImage);
  	if (!gl)
  	{
-@@ -246,6 +294,9 @@ GL3_Draw_PicScaledCol(int x, int y, const char *pic, float factor, const float c
+@@ -246,6 +300,9 @@ GL3_Draw_PicScaledCol(int x, int y, const char *pic, float factor, const float c
  void
  GL3_Draw_TileClear(int x, int y, int w, int h, const char *pic)
  {
@@ -381,7 +465,7 @@ index bd53035..153c637 100644
  	gl3image_t *image = R_FindPic(pic, (findimage_t)GL3_FindImage);
  	if (!image)
  	{
-@@ -262,6 +313,9 @@ GL3_Draw_TileClear(int x, int y, int w, int h, const char *pic)
+@@ -262,6 +319,9 @@ GL3_Draw_TileClear(int x, int y, int w, int h, const char *pic)
  void
  GL3_DrawFrameBufferObject(int x, int y, int w, int h, GLuint fboTexture, const float v_blend[4])
  {
@@ -391,7 +475,7 @@ index bd53035..153c637 100644
  	qboolean underwater = (r_newrefdef.rdflags & RDF_UNDERWATER) != 0;
  	gl3ShaderInfo_t* shader = underwater ? &gl3state.si2DpostProcessWater
  	                                     : &gl3state.si2DpostProcess;
-@@ -286,6 +340,9 @@ GL3_DrawFrameBufferObject(int x, int y, int w, int h, GLuint fboTexture, const f
+@@ -286,6 +346,9 @@ GL3_DrawFrameBufferObject(int x, int y, int w, int h, GLuint fboTexture, const f
  void
  GL3_Draw_Fill(int x, int y, int w, int h, int c)
  {
@@ -401,7 +485,7 @@ index bd53035..153c637 100644
  	union
  	{
  		unsigned c;
-@@ -300,11 +357,13 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+@@ -300,11 +363,13 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
  
  	color.c = d_8to24table[c];
  
@@ -416,7 +500,7 @@ index bd53035..153c637 100644
  		x+w, y
  	};
  
-@@ -322,7 +381,7 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+@@ -322,7 +387,7 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
  	GL3_BindVBO(vbo2D);
  	glBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
  
@@ -425,7 +509,7 @@ index bd53035..153c637 100644
  }
  
  // in GL1 this is called R_Flash() (which just calls R_PolyBlend())
-@@ -331,6 +390,9 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
+@@ -331,6 +396,9 @@ GL3_Draw_Fill(int x, int y, int w, int h, int c)
  void
  GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
  {
@@ -435,7 +519,7 @@ index bd53035..153c637 100644
  	if (gl_polyblend->value == 0)
  	{
  		return;
-@@ -338,11 +400,13 @@ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
+@@ -338,11 +406,13 @@ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
  
  	int i=0;
  
@@ -450,7 +534,7 @@ index bd53035..153c637 100644
  		x+w, y
  	};
  
-@@ -359,7 +423,7 @@ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
+@@ -359,7 +429,7 @@ GL3_Draw_Flash(const float color[4], float x, float y, float w, float h)
  	GL3_BindVBO(vbo2D);
  	glBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
  
@@ -459,7 +543,7 @@ index bd53035..153c637 100644
  
  	glDisable(GL_BLEND);
  }
-@@ -374,6 +438,9 @@ GL3_Draw_FadeScreen(void)
+@@ -374,6 +444,9 @@ GL3_Draw_FadeScreen(void)
  void
  GL3_Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *data, int bits)
  {
@@ -470,10 +554,20 @@ index bd53035..153c637 100644
  
  	GL3_Bind(0);
 diff --git a/src/client/refresh/gl3/gl3_image.c b/src/client/refresh/gl3/gl3_image.c
-index c436bc8..c46031c 100644
+index c436bc8..566e71d 100644
 --- a/src/client/refresh/gl3/gl3_image.c
 +++ b/src/client/refresh/gl3/gl3_image.c
-@@ -207,6 +207,16 @@ GL3_Upload32(unsigned *data, int width, int height, qboolean mipmap)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2016-2017 Daniel Gibson
+@@ -207,6 +213,16 @@ GL3_Upload32(unsigned *data, int width, int height, qboolean mipmap)
  		}
  	}
  
@@ -491,10 +585,20 @@ index c436bc8..c46031c 100644
  	             0, GL_RGBA, GL_UNSIGNED_BYTE, data);
  
 diff --git a/src/client/refresh/gl3/gl3_main.c b/src/client/refresh/gl3/gl3_main.c
-index 0141fe7..b27e740 100644
+index 0141fe7..b53538d 100644
 --- a/src/client/refresh/gl3/gl3_main.c
 +++ b/src/client/refresh/gl3/gl3_main.c
-@@ -710,6 +710,29 @@ GL3_Shutdown(void)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2016-2017 Daniel Gibson
+@@ -710,6 +716,29 @@ GL3_Shutdown(void)
  void
  GL3_BufferAndDraw3D(const gl3_3D_vtx_t* verts, int numVerts, GLenum drawMode)
  {
@@ -524,7 +628,7 @@ index 0141fe7..b27e740 100644
  	if(!gl3config.useBigVBO)
  	{
  		glBufferData( GL_ARRAY_BUFFER, sizeof(gl3_3D_vtx_t)*numVerts, verts, GL_STREAM_DRAW );
-@@ -1031,7 +1054,7 @@ GL3_DrawParticles(void)
+@@ -1031,7 +1060,7 @@ GL3_DrawParticles(void)
  		glDepthMask(GL_FALSE);
  		glEnable(GL_BLEND);
  
@@ -533,7 +637,7 @@ index 0141fe7..b27e740 100644
  		// the RPi4 GLES3 implementation doesn't draw particles if culling is
  		// enabled (at least with GL_FRONT which seems to be default in q2?)
  		glDisable(GL_CULL_FACE);
-@@ -1062,11 +1085,17 @@ GL3_DrawParticles(void)
+@@ -1062,11 +1091,17 @@ GL3_DrawParticles(void)
  		GL3_BindVAO(gl3state.vaoParticle);
  		GL3_BindVBO(gl3state.vboParticle);
  		glBufferData(GL_ARRAY_BUFFER, sizeof(part_vtx)*numParticles, buf, GL_STREAM_DRAW);
@@ -552,7 +656,7 @@ index 0141fe7..b27e740 100644
  		if(r_cull->value != 0.0f)
  			glEnable(GL_CULL_FACE);
  #else
-@@ -1666,16 +1695,32 @@ GL3_RenderView(refdef_t *fd)
+@@ -1666,16 +1701,32 @@ GL3_RenderView(refdef_t *fd)
  
  	GL3_MarkLeaves(); /* done here so we know if we're in water */
  
@@ -585,7 +689,7 @@ index 0141fe7..b27e740 100644
  
  	// Note: R_Flash() is now GL3_Draw_Flash() and called from GL3_RenderFrame()
  
-@@ -1766,6 +1811,9 @@ GL3_SetLightLevel(entity_t *currententity)
+@@ -1766,6 +1817,9 @@ GL3_SetLightLevel(entity_t *currententity)
  static void
  GL3_RenderFrame(refdef_t *fd)
  {
@@ -596,10 +700,20 @@ index 0141fe7..b27e740 100644
  	GL3_SetLightLevel(NULL);
  	qboolean usedFBO = gl3state.ppFBObound; // if it was/is used this frame
 diff --git a/src/client/refresh/gl3/gl3_shaders.c b/src/client/refresh/gl3/gl3_shaders.c
-index 6d8a9cd..e2aff80 100644
+index 6d8a9cd..31e12e2 100644
 --- a/src/client/refresh/gl3/gl3_shaders.c
 +++ b/src/client/refresh/gl3/gl3_shaders.c
-@@ -862,6 +862,29 @@ static const char* fragmentSrcAliasColor = MULTILINE_STRING(
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2016-2017 Daniel Gibson
+@@ -862,6 +868,29 @@ static const char* fragmentSrcAliasColor = MULTILINE_STRING(
  		}
  );
  
@@ -629,7 +743,7 @@ index 6d8a9cd..e2aff80 100644
  static const char* vertexSrcParticles = MULTILINE_STRING(
  
  		// it gets attributes and uniforms from vertexCommon3D
-@@ -879,8 +902,13 @@ static const char* vertexSrcParticles = MULTILINE_STRING(
+@@ -879,8 +908,13 @@ static const char* vertexSrcParticles = MULTILINE_STRING(
  			gl_PointSize = texCoord.x/pointDist;
  		}
  );
@@ -645,10 +759,20 @@ index 6d8a9cd..e2aff80 100644
  		// it gets attributes and uniforms from fragmentCommon3D
  
 diff --git a/src/client/refresh/gl3/gl3_surf.c b/src/client/refresh/gl3/gl3_surf.c
-index fc82dd5..fad8ad6 100644
+index fc82dd5..029edc2 100644
 --- a/src/client/refresh/gl3/gl3_surf.c
 +++ b/src/client/refresh/gl3/gl3_surf.c
-@@ -115,6 +115,12 @@ void GL3_SurfInit(void)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2016-2017 Daniel Gibson
+@@ -115,6 +121,12 @@ void GL3_SurfInit(void)
  
  	glEnableVertexAttribArray(GL3_ATTRIB_COLOR);
  	qglVertexAttribPointer(GL3_ATTRIB_COLOR, 4, GL_FLOAT, GL_FALSE, 9*sizeof(GLfloat), 5*sizeof(GLfloat));
@@ -661,7 +785,7 @@ index fc82dd5..fad8ad6 100644
  }
  
  void GL3_SurfShutdown(void)
-@@ -289,7 +295,8 @@ UpdateLMscales(const hmm_vec4 lmScales[MAX_LIGHTMAPS_PER_SURFACE], gl3ShaderInfo
+@@ -289,7 +301,8 @@ UpdateLMscales(const hmm_vec4 lmScales[MAX_LIGHTMAPS_PER_SURFACE], gl3ShaderInfo
  }
  
  static void
@@ -671,7 +795,7 @@ index fc82dd5..fad8ad6 100644
  {
  	int map;
  	gl3image_t *image;
-@@ -335,7 +342,16 @@ RenderBrushPoly(entity_t *currententity, msurface_t *fa)
+@@ -335,7 +348,16 @@ RenderBrushPoly(entity_t *currententity, msurface_t *fa)
  	{
  		GL3_UseProgram(gl3state.si3Dlm.shaderProgram);
  		UpdateLMscales(lmScales, &gl3state.si3Dlm);
@@ -689,7 +813,7 @@ index fc82dd5..fad8ad6 100644
  	}
  
  	// Note: lightmap chains are gone, lightmaps are rendered together with normal texture in one pass
-@@ -400,6 +416,103 @@ GL3_DrawAlphaSurfaces(void)
+@@ -400,6 +422,103 @@ GL3_DrawAlphaSurfaces(void)
  	gl3_alpha_surfaces = NULL;
  }
  
@@ -793,7 +917,7 @@ index fc82dd5..fad8ad6 100644
  static void
  DrawTextureChains(entity_t *currententity)
  {
-@@ -416,6 +529,9 @@ DrawTextureChains(entity_t *currententity)
+@@ -416,6 +535,9 @@ DrawTextureChains(entity_t *currententity)
  			continue;
  		}
  
@@ -803,7 +927,7 @@ index fc82dd5..fad8ad6 100644
  		s = image->texturechain;
  
  		if (!s)
-@@ -427,8 +543,12 @@ DrawTextureChains(entity_t *currententity)
+@@ -427,8 +549,12 @@ DrawTextureChains(entity_t *currententity)
  
  		for ( ; s; s = s->texturechain)
  		{
@@ -817,7 +941,7 @@ index fc82dd5..fad8ad6 100644
  		}
  
  		image->texturechain = NULL;
-@@ -531,7 +651,7 @@ DrawInlineBModel(entity_t *currententity, gl3model_t *currentmodel)
+@@ -531,7 +657,7 @@ DrawInlineBModel(entity_t *currententity, gl3model_t *currentmodel)
  			}
  			else
  			{
@@ -826,16 +950,26 @@ index fc82dd5..fad8ad6 100644
  			}
  		}
  	}
-@@ -882,4 +1002,3 @@ GL3_MarkLeaves(void)
+@@ -882,4 +1008,3 @@ GL3_MarkLeaves(void)
  		}
  	}
  }
 -
 diff --git a/src/client/refresh/gl3/glad/include/glad/glad.h b/src/client/refresh/gl3/glad/include/glad/glad.h
-index 690d774..240aa2d 100644
+index 690d774..2906c0f 100644
 --- a/src/client/refresh/gl3/glad/include/glad/glad.h
 +++ b/src/client/refresh/gl3/glad/include/glad/glad.h
-@@ -1830,6 +1830,11 @@ GLAPI int GLAD_GL_VERSION_3_1;
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+ 
+     OpenGL loader generated by glad 0.1.36 on Sun May 14 07:53:38 2023.
+@@ -1830,6 +1836,11 @@ GLAPI int GLAD_GL_VERSION_3_1;
  typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
  GLAPI PFNGLDRAWARRAYSINSTANCEDPROC glad_glDrawArraysInstanced;
  #define glDrawArraysInstanced glad_glDrawArraysInstanced
@@ -848,10 +982,20 @@ index 690d774..240aa2d 100644
  GLAPI PFNGLDRAWELEMENTSINSTANCEDPROC glad_glDrawElementsInstanced;
  #define glDrawElementsInstanced glad_glDrawElementsInstanced
 diff --git a/src/client/refresh/gl3/glad/src/glad.c b/src/client/refresh/gl3/glad/src/glad.c
-index b085cd8..d6ac587 100644
+index b085cd8..70f0b53 100644
 --- a/src/client/refresh/gl3/glad/src/glad.c
 +++ b/src/client/refresh/gl3/glad/src/glad.c
-@@ -204,6 +204,9 @@ PFNGLDISABLEVERTEXATTRIBARRAYPROC glad_glDisableVertexAttribArray = NULL;
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+ 
+     OpenGL loader generated by glad 0.1.36 on Sun May 14 07:53:38 2023.
+@@ -204,6 +210,9 @@ PFNGLDISABLEVERTEXATTRIBARRAYPROC glad_glDisableVertexAttribArray = NULL;
  PFNGLDISABLEIPROC glad_glDisablei = NULL;
  PFNGLDRAWARRAYSPROC glad_glDrawArrays = NULL;
  PFNGLDRAWARRAYSINSTANCEDPROC glad_glDrawArraysInstanced = NULL;
@@ -861,7 +1005,7 @@ index b085cd8..d6ac587 100644
  PFNGLDRAWBUFFERPROC glad_glDrawBuffer = NULL;
  PFNGLDRAWBUFFERSPROC glad_glDrawBuffers = NULL;
  PFNGLDRAWELEMENTSPROC glad_glDrawElements = NULL;
-@@ -894,9 +897,12 @@ int gladLoadGLLoader(GLADloadproc load) {
+@@ -894,9 +903,12 @@ int gladLoadGLLoader(GLADloadproc load) {
  	load_GL_VERSION_3_0(load);
  	load_GL_VERSION_3_1(load);
  	load_GL_VERSION_3_2(load);
@@ -876,10 +1020,20 @@ index b085cd8..d6ac587 100644
  }
 -
 diff --git a/src/client/refresh/gl3/header/local.h b/src/client/refresh/gl3/header/local.h
-index a32b88d..430ff28 100644
+index a32b88d..71db66c 100644
 --- a/src/client/refresh/gl3/header/local.h
 +++ b/src/client/refresh/gl3/header/local.h
-@@ -558,3 +558,7 @@ extern cvar_t *r_validation;
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2016-2017 Daniel Gibson
+@@ -558,3 +564,7 @@ extern cvar_t *r_validation;
  extern cvar_t *gl3_debugcontext;
  
  #endif /* SRC_CLIENT_REFRESH_GL3_HEADER_LOCAL_H_ */
@@ -888,10 +1042,20 @@ index a32b88d..430ff28 100644
 +void GL3_FlushChars(void);
 +#endif
 diff --git a/src/client/refresh/ref_shared.h b/src/client/refresh/ref_shared.h
-index 8830815..1857bd7 100644
+index 8830815..98a3137 100644
 --- a/src/client/refresh/ref_shared.h
 +++ b/src/client/refresh/ref_shared.h
-@@ -27,6 +27,14 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -27,6 +33,14 @@
  #ifndef SRC_CLIENT_REFRESH_REF_SHARED_H_
  #define SRC_CLIENT_REFRESH_REF_SHARED_H_
  
@@ -907,10 +1071,20 @@ index 8830815..1857bd7 100644
  
  #ifdef _MSC_VER
 diff --git a/src/client/sound/sdl.c b/src/client/sound/sdl.c
-index b99fa8d..38d3c86 100644
+index b99fa8d..e1d10e1 100644
 --- a/src/client/sound/sdl.c
 +++ b/src/client/sound/sdl.c
-@@ -57,6 +57,9 @@ static sound_t *backend;
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  * Copyright (C) 2010, 2013 Yamagi Burmeister
+@@ -57,6 +63,9 @@ static sound_t *backend;
  static portable_samplepair_t paintbuffer[SDL_PAINTBUFFER_SIZE];
  static int beginofs;
  static int playpos = 0;
@@ -920,7 +1094,7 @@ index b99fa8d..38d3c86 100644
  static int samplesize = 0;
  static int snd_inited = 0;
  static int snd_scaletable[32][256];
-@@ -859,6 +862,17 @@ SDL_ClearBuffer(void)
+@@ -859,6 +868,17 @@ SDL_ClearBuffer(void)
  static void
  SDL_UpdateSoundtime(void)
  {
@@ -938,7 +1112,7 @@ index b99fa8d..38d3c86 100644
  	static int buffers;
  	static int oldsamplepos;
  	int fullsamples;
-@@ -882,6 +896,7 @@ SDL_UpdateSoundtime(void)
+@@ -882,6 +902,7 @@ SDL_UpdateSoundtime(void)
  
  	oldsamplepos = playpos;
  	soundtime = buffers * fullsamples + playpos / sound.channels;
@@ -946,7 +1120,7 @@ index b99fa8d..38d3c86 100644
  }
  
  /*
-@@ -1305,6 +1320,11 @@ SDL_Callback(void *data, Uint8 *stream, int length)
+@@ -1305,6 +1326,11 @@ SDL_Callback(void *data, Uint8 *stream, int length)
  	}
  
  	memcpy(stream, backend->buffer + pos, length1);
@@ -958,7 +1132,7 @@ index b99fa8d..38d3c86 100644
  
  	/* Set new position */
  	if (length2 <= 0)
-@@ -1314,6 +1334,9 @@ SDL_Callback(void *data, Uint8 *stream, int length)
+@@ -1314,6 +1340,9 @@ SDL_Callback(void *data, Uint8 *stream, int length)
  	else
  	{
  		memcpy(stream + length1, backend->buffer, length2);
@@ -968,7 +1142,7 @@ index b99fa8d..38d3c86 100644
  		playpos = (length2 / (backend->samplebits / 8));
  	}
  
-@@ -1458,6 +1481,9 @@ SDL_BackendInit(void)
+@@ -1458,6 +1487,9 @@ SDL_BackendInit(void)
  	backend = &sound;
  
  	playpos = 0;
@@ -978,7 +1152,7 @@ index b99fa8d..38d3c86 100644
  	backend->samplebits = spec.format & 0xFF;
  	backend->channels = spec.channels;
  
-@@ -1622,6 +1648,9 @@ SDL_BackendInit(void)
+@@ -1622,6 +1654,9 @@ SDL_BackendInit(void)
  	backend = &sound;
  
  	playpos = 0;
@@ -989,10 +1163,20 @@ index b99fa8d..38d3c86 100644
  	backend->channels = spec.channels;
  
 diff --git a/src/client/vid/vid.c b/src/client/vid/vid.c
-index 6768cef..cacae58 100644
+index 6768cef..10f8b72 100644
 --- a/src/client/vid/vid.c
 +++ b/src/client/vid/vid.c
-@@ -328,6 +328,9 @@ VID_GetRendererLibPath(const char *renderer, char *path, size_t len)
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -328,6 +334,9 @@ VID_GetRendererLibPath(const char *renderer, char *path, size_t len)
  qboolean
  VID_HasRenderer(const char *renderer)
  {
@@ -1002,7 +1186,7 @@ index 6768cef..cacae58 100644
  	char reflib_path[MAX_OSPATH] = {0};
  	VID_GetRendererLibPath(renderer, reflib_path, sizeof(reflib_path));
  
-@@ -337,6 +340,7 @@ VID_HasRenderer(const char *renderer)
+@@ -337,6 +346,7 @@ VID_HasRenderer(const char *renderer)
  	}
  
  	return false;
@@ -1010,7 +1194,7 @@ index 6768cef..cacae58 100644
  }
  
  /*
-@@ -403,6 +407,11 @@ VID_LoadRenderer(void)
+@@ -403,6 +413,11 @@ VID_LoadRenderer(void)
  	// Log what we're doing.
  	Com_Printf("----- refresher initialization -----\n");
  
@@ -1022,7 +1206,7 @@ index 6768cef..cacae58 100644
  	snprintf(reflib_name, sizeof(reflib_name), "ref_%s.%s", vid_renderer->string, lib_ext);
  	VID_GetRendererLibPath(vid_renderer->string, reflib_path, sizeof(reflib_path));
  	Com_Printf("Loading library: %s\n", reflib_name);
-@@ -426,6 +435,7 @@ VID_LoadRenderer(void)
+@@ -426,6 +441,7 @@ VID_LoadRenderer(void)
  
  		return false;
  	}
@@ -1030,7 +1214,7 @@ index 6768cef..cacae58 100644
  
  	// Fill in the struct exported to the renderer.
  	// FIXME: Do we really need all these?
-@@ -535,6 +545,9 @@ VID_CheckChanges(void)
+@@ -535,6 +551,9 @@ VID_CheckChanges(void)
  		// Mkay, let's try our luck.
  		while (!VID_LoadRenderer())
  		{
@@ -1041,10 +1225,20 @@ index 6768cef..cacae58 100644
  			if ((strcmp(vid_renderer->string, "gl3") != 0) &&
  				(strcmp(vid_renderer->string, "gles3") != 0) &&
 diff --git a/src/common/frame.c b/src/common/frame.c
-index 8db3492..b653a18 100644
+index 8db3492..4af7a87 100644
 --- a/src/common/frame.c
 +++ b/src/common/frame.c
-@@ -26,6 +26,9 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -26,6 +32,9 @@
  
  #include "header/common.h"
  #include <setjmp.h>
@@ -1054,7 +1248,7 @@ index 8db3492..b653a18 100644
  
  cvar_t *developer;
  cvar_t *modder;
-@@ -173,6 +176,10 @@ Qcommon_Mainloop(void)
+@@ -173,6 +182,10 @@ Qcommon_Mainloop(void)
  	/* The mainloop. The legend. */
  	while (1)
  	{
@@ -1066,10 +1260,20 @@ index 8db3492..b653a18 100644
  		if (!cl_timedemo->value)
  		{
 diff --git a/src/game/header/local.h b/src/game/header/local.h
-index 80255d3..57b33c7 100644
+index 80255d3..453954d 100644
 --- a/src/game/header/local.h
 +++ b/src/game/header/local.h
-@@ -27,6 +27,12 @@
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -27,6 +33,12 @@
  #ifndef GAME_LOCAL_H
  #define GAME_LOCAL_H
  
@@ -1083,10 +1287,20 @@ index 80255d3..57b33c7 100644
  
  /* define GAME_INCLUDE so that game.h does not define the
 diff --git a/src/server/sv_save.c b/src/server/sv_save.c
-index 7132355..fded844 100644
+index 7132355..9de6641 100644
 --- a/src/server/sv_save.c
 +++ b/src/server/sv_save.c
-@@ -162,7 +162,9 @@ void
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
+  *
+@@ -162,7 +168,9 @@ void
  SV_WriteLevelFile(void)
  {
  	char name[MAX_OSPATH];
@@ -1096,7 +1310,7 @@ index 7132355..fded844 100644
  	FILE *f;
  
  	Com_DPrintf("SV_WriteLevelFile()\n");
-@@ -181,6 +183,11 @@ SV_WriteLevelFile(void)
+@@ -181,6 +189,11 @@ SV_WriteLevelFile(void)
  	CM_WritePortalState(f);
  	fclose(f);
  
@@ -1108,7 +1322,7 @@ index 7132355..fded844 100644
  	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
  	Sys_GetWorkDir(workdir, sizeof(workdir));
  	Sys_Mkdir(name);
-@@ -196,6 +203,7 @@ SV_WriteLevelFile(void)
+@@ -196,6 +209,7 @@ SV_WriteLevelFile(void)
  	ge->WriteLevel(name);
  
  	Sys_SetWorkDir(workdir);
@@ -1116,7 +1330,7 @@ index 7132355..fded844 100644
  }
  
  static void
-@@ -220,7 +228,9 @@ void
+@@ -220,7 +234,9 @@ void
  SV_ReadLevelFile(void)
  {
  	char name[MAX_OSPATH];
@@ -1126,7 +1340,7 @@ index 7132355..fded844 100644
  	fileHandle_t f;
  
  	Com_DPrintf("SV_ReadLevelFile()\n");
-@@ -238,6 +248,10 @@ SV_ReadLevelFile(void)
+@@ -238,6 +254,10 @@ SV_ReadLevelFile(void)
  	CM_ReadPortalState(f);
  	FS_FCloseFile(f);
  
@@ -1137,7 +1351,7 @@ index 7132355..fded844 100644
  	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
  	Sys_GetWorkDir(workdir, sizeof(workdir));
  
-@@ -252,6 +266,7 @@ SV_ReadLevelFile(void)
+@@ -252,6 +272,7 @@ SV_ReadLevelFile(void)
  	ge->ReadLevel(name);
  
  	Sys_SetWorkDir(workdir);
@@ -1145,7 +1359,7 @@ index 7132355..fded844 100644
  }
  
  void
-@@ -260,7 +275,9 @@ SV_WriteServerFile(qboolean autosave)
+@@ -260,7 +281,9 @@ SV_WriteServerFile(qboolean autosave)
  	FILE *f;
  	cvar_t *var;
  	char name[MAX_OSPATH], string[128];
@@ -1155,7 +1369,7 @@ index 7132355..fded844 100644
  	char comment[32];
  	time_t aclock;
  	struct tm *newtime;
-@@ -329,6 +346,10 @@ SV_WriteServerFile(qboolean autosave)
+@@ -329,6 +352,10 @@ SV_WriteServerFile(qboolean autosave)
  	fclose(f);
  
  	/* write game state */
@@ -1166,7 +1380,7 @@ index 7132355..fded844 100644
  	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
  	Sys_GetWorkDir(workdir, sizeof(workdir));
  	Sys_Mkdir(name);
-@@ -343,6 +364,7 @@ SV_WriteServerFile(qboolean autosave)
+@@ -343,6 +370,7 @@ SV_WriteServerFile(qboolean autosave)
  	ge->WriteGame("game.ssv", autosave);
  
  	Sys_SetWorkDir(workdir);
@@ -1174,7 +1388,7 @@ index 7132355..fded844 100644
  }
  
  static void
-@@ -350,7 +372,9 @@ SV_ReadServerFile(void)
+@@ -350,7 +378,9 @@ SV_ReadServerFile(void)
  {
  	fileHandle_t f;
  	char name[MAX_OSPATH], string[128];
@@ -1184,7 +1398,7 @@ index 7132355..fded844 100644
  	char comment[32];
  	char mapcmd[MAX_SAVE_TOKEN_CHARS];
  
-@@ -395,6 +419,10 @@ SV_ReadServerFile(void)
+@@ -395,6 +425,10 @@ SV_ReadServerFile(void)
  	strcpy(svs.mapcmd, mapcmd);
  
  	/* read game state */
@@ -1195,7 +1409,7 @@ index 7132355..fded844 100644
  	Com_sprintf(name, sizeof(name), "%s/save/current", FS_Gamedir());
  	Sys_GetWorkDir(workdir, sizeof(workdir));
  
-@@ -408,6 +436,7 @@ SV_ReadServerFile(void)
+@@ -408,6 +442,7 @@ SV_ReadServerFile(void)
  	ge->ReadGame("game.ssv");
  
  	Sys_SetWorkDir(workdir);
@@ -1203,7 +1417,7 @@ index 7132355..fded844 100644
  }
  
  void
-@@ -525,4 +554,3 @@ SV_Savegame_f(void)
+@@ -525,4 +560,3 @@ SV_Savegame_f(void)
  
  	Com_Printf("Done.\n");
  }

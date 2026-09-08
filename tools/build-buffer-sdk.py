@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+# Copyright (C) 2026 BlackBearReloaded
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Build an isolated, pinned G7 experiment; never modify the SDK control.
 
 Usage: python3 tools/build-buffer-sdk.py /path/to/ps5-opengl [--texture-flush] [--4k60]

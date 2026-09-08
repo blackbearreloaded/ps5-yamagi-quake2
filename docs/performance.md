@@ -1,3 +1,9 @@
+<!--
+PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+Copyright (C) 2026 BlackBearReloaded
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # 1080p performance
 
 Hardware evidence is scoped to one firmware-6.02 console, the Quake II 3.14

@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
+# PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+# Copyright (C) 2026 BlackBearReloaded
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Exercise the actual native adapter with 1080p/4K and failed size queries."""
 from pathlib import Path
 import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[1]
-code = (root / 'src/ps5/ps5_video.c').read_text().split('\n', 1)[1]
+code = (root / 'src/ps5/ps5_video.c').read_text().replace(
+    '#include "../../upstream/yquake2/src/client/vid/header/ref.h"', '')
 stub = r'''
 #include <assert.h>
 #include <stdbool.h>

@@ -1,9 +1,20 @@
+<!--
+PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+Copyright (C) 2026 BlackBearReloaded
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 > **Original game credits:** Quake II was created by **id Software**.
 > Thanks to the original development team for the game and its
 > [official open-source engine release](https://github.com/id-Software/Quake-2).
 > This PS5 port builds on [Yamagi Quake II](https://github.com/yquake2/yquake2);
 > credit and thanks also go to the Yamagi developers and contributors for their
 > continued maintenance and improvements.
+
+> **PS5 port and maintainer:** [BlackBearReloaded](https://github.com/blackbearreloaded).
+> Native PS5 integration, renderer optimizations, controller/audio integration,
+> build tools, packaging and port-specific tests. Upstream developers retain
+> credit for their original work; see [third-party notices](THIRD_PARTY_NOTICES.md).
 
 > **Disclaimer:** This is an AI-assisted project developed using OpenAI Codex.
 

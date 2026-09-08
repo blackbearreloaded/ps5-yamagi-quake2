@@ -1,8 +1,22 @@
+PS5 Yamagi Quake II - PS5 contribution patch.
+Copyright (C) 2026 BlackBearReloaded (PS5 contributions only).
+Upstream context retains its original copyright and license notices.
+
 diff --git a/tooling/native/sce_module_writer.cpp b/tooling/native/sce_module_writer.cpp
-index b41dd9f..4af95de 100644
+index b41dd9f..4bae4de 100644
 --- a/tooling/native/sce_module_writer.cpp
 +++ b/tooling/native/sce_module_writer.cpp
-@@ -620,6 +620,7 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+@@ -1,3 +1,9 @@
++/*
++ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
++ * PS5 contributions: Copyright (C) 2026 BlackBearReloaded.
++ * Upstream copyright and license notices are retained below.
++ */
++
+ /*
+  * ps5-native-app-boilerplate - Native PS5 dynamic-module writer.
+  * Copyright (C) 2026 BlackBearReloaded
+@@ -620,6 +626,7 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
      std::uint64_t ro_start = std::numeric_limits<std::uint64_t>::max();
      std::uint64_t ro_end = 0;
      std::uint64_t relro_start = std::numeric_limits<std::uint64_t>::max();
@@ -10,7 +24,7 @@ index b41dd9f..4af95de 100644
      std::uint64_t relro_content_end = 0;
      std::uint64_t data_start = dynamic_source.address;
      std::uint64_t data_end = data_start + 8;
-@@ -650,6 +651,10 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+@@ -650,6 +657,10 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
          }
          else if (relro_section(input.name))
          {
@@ -21,7 +35,7 @@ index b41dd9f..4af95de 100644
              relro_start = std::min(relro_start, input.address);
              relro_content_end = std::max(relro_content_end, end);
          }
-@@ -668,6 +673,8 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+@@ -668,6 +679,8 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
      }
      require(relro_start != std::numeric_limits<std::uint64_t>::max(),
              "LLVM-linked image has no GOT/RELRO region");
@@ -30,7 +44,7 @@ index b41dd9f..4af95de 100644
      if (ro_start == std::numeric_limits<std::uint64_t>::max())
      {
          ro_start = align_up(text_end, kPage);
-@@ -838,7 +845,6 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
+@@ -838,7 +851,6 @@ Bytes write_executable(const Image &image, std::span<const Stub> stubs, const Op
              continue;
          copy_bytes(output, input.file_offset, input.data);
      }

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+# Copyright (C) 2026 BlackBearReloaded
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Check the actual native FPS overlay and per-call timing wrappers offline."""
 from pathlib import Path
 import subprocess

@@ -1,3 +1,9 @@
+/*
+ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+ * Copyright (C) 2026 BlackBearReloaded
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #ifndef YQ2_PS5_LIFECYCLE_H
 #define YQ2_PS5_LIFECYCLE_H
 

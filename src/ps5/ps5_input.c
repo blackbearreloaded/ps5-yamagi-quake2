@@ -1,3 +1,9 @@
+/*
+ * PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+ * Copyright (C) 2026 BlackBearReloaded
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #include <SDL2/SDL.h>
 
 static SDL_Thread *input_thread;

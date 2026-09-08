@@ -1,3 +1,7 @@
+# PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
+# Copyright (C) 2026 BlackBearReloaded
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Compile/link check only. This ELF is not a native folder application.
 SHELL := bash
 .DEFAULT_GOAL := all
