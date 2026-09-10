@@ -6,6 +6,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Changelog
 
+## Unreleased
+
+- Show the native resolution as fixed in the Video menu, disable unsupported
+  fullscreen changes, and avoid unnecessary mode restarts when applying settings.
+
 ## 0.1.0-alpha.3 — 2026-09-09
 
 - Adopt the current PS5 OpenGL runtime and native heap helper at 1080p60.

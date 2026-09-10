@@ -1422,3 +1422,75 @@ index 7132355..9de6641 100644
  	Com_Printf("Done.\n");
  }
 -
+diff --git a/src/client/menu/videomenu.c b/src/client/menu/videomenu.c
+--- a/src/client/menu/videomenu.c
++++ b/src/client/menu/videomenu.c
+@@ -1,5 +1,6 @@
+ /*
+  * Copyright (C) 1997-2001 Id Software, Inc.
++ * PS5 fixed video mode contributions Copyright (C) 2026 BlackBearReloaded.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -345,6 +346,7 @@
+ 		}
+ 	}
+ 
++#ifndef YQ2_PS5
+ 	/* auto mode */
+ 
+ 	if (strcmp(s_mode_list.itemnames[s_mode_list.curvalue], AUTO_MODE_NAME) == 0)
+@@ -362,6 +364,8 @@
+ 		Cvar_SetValue("r_mode", modes[s_mode_list.curvalue].modenum);
+ 		restart = true;
+ 	}
++
++#endif
+ 
+ 	/* UI scaling */
+ 	if (s_uiscale_list.curvalue == 0)
+@@ -380,6 +384,7 @@
+ 		Cvar_SetValue("crosshair_scale", r_hudscale->value);
+ 	}
+ 
++#ifndef YQ2_PS5
+ 	/* Restarts automatically */
+ 	if (vid_fullscreen->value != s_fs_box.curvalue)
+ 	{
+@@ -391,6 +396,8 @@
+ 	{
+ 		Cvar_SetValue("r_mode", -2.0f);
+ 	}
++
++#endif
+ 
+ 	/* vertical sync */
+ 	if (r_vsync->value != s_vsync_list.curvalue)
+@@ -627,6 +634,16 @@
+ 		s_mode_list.curvalue = GetCustomValue(&s_mode_list);
+ 	}
+ 
++#ifdef YQ2_PS5
++	/* Native presentation owns the resolution; keep the actual mode visible. */
++	static char fixed_mode[32];
++	static const char *fixed_modes[] = { fixed_mode, NULL };
++	snprintf(fixed_mode, sizeof(fixed_mode), "%dx%d (fixed)", viddef.width, viddef.height);
++	s_mode_list.itemnames = fixed_modes;
++	s_mode_list.curvalue = 0;
++	s_mode_list.generic.flags = QMF_INACTIVE;
++#endif
++
+ 	s_brightness_slider.generic.type = MTYPE_SLIDER;
+ 	s_brightness_slider.generic.name = "brightness";
+ 	s_brightness_slider.generic.x = 0;
+@@ -797,6 +814,10 @@
+ 	s_fs_box.generic.y = (y += 10);
+ 	s_fs_box.itemnames = fullscreen_names;
+ 	s_fs_box.curvalue = (int)vid_fullscreen->value;
++#ifdef YQ2_PS5
++	s_fs_box.curvalue = 1;
++	s_fs_box.generic.flags = QMF_INACTIVE;
++#endif
+ 
+ 	s_vsync_list.generic.type = MTYPE_SPINCONTROL;
+ 	s_vsync_list.generic.name = "vertical sync";
