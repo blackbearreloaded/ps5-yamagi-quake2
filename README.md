@@ -34,12 +34,13 @@ Demo available by clicking the image below.
 ## Highlights
 
 - Based on Yamagi Quake II 8.70, with a native PS5 lifecycle and static GL3 renderer.
-- Powered by [PS5 OpenGL](https://github.com/blackbearreloaded/ps5-opengl), consumed from its pinned GitHub SDK release with the game's two performance adaptations.
+- Powered by [PS5 OpenGL](https://github.com/blackbearreloaded/ps5-opengl), using the current optimized runtime in a frozen 1080p60 SDK with complete sources.
 - Renders at **1920 × 1080**, targeting 60 FPS, with an FPS overlay at the top left.
 - DualSense input is sampled independently of rendering, preserving short button presses.
 - Stereo sound, controller defaults, writable saves and configuration.
 - Custom shell icon, selection/launch backgrounds and looping selection music.
 - Includes the renderer patches and host regressions used to resolve startup, input, audio and performance problems.
+- The latest SDK integration was tested at 60 FPS throughout the owner's bounded gameplay check, including underwater.
 
 This app requires an already configured, compatible PS5 homebrew environment.
 It contains no exploit, proprietary Sony SDK or firmware modules.
@@ -71,9 +72,9 @@ PPSA99007/
 └── sce_sys/                metadata, artwork and selection music
 ```
 
-The ZIP and `PPSA99007.ffpfsc` contain the same complete demo installation.
-Install either format supported by your loader. The FFPFSC is unpacked and
-compared byte-for-byte during CI, including its required startup assets.
+Use the extracted folder from `PPSA99007.zip`. FFPFSC downloads were withdrawn
+after the owner reported that the compressed image failed to start; Actions
+publishes only the folder ZIP and checksum.
 Version `0.1.0-alpha.1` omitted game data and cannot launch by itself; replace
 that package with the current demo build.
 Save games and user configuration live under `/download0/yamagi/baseq2/`.

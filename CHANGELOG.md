@@ -6,6 +6,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Changelog
 
+## 0.1.0-alpha.3 — 2026-09-09
+
+- Adopt the current PS5 OpenGL runtime and native heap helper at 1080p60.
+- Owner reports 60 FPS throughout the bounded gameplay check, including underwater.
+- Freeze the tested SDK with full source archives and checksums for CI builds.
+- Publish folder ZIP packages only; withdraw the nonworking FFPFSC format.
+
 ## 0.1.0-alpha.2 — 2026-09-08
 
 - Fix clean-install startup by including the hash-verified official demo and

@@ -11,12 +11,13 @@
   },
   "game_sdk": {
     "repository": "blackbearreloaded/ps5-yamagi-quake2",
-    "tag": "v0.1.0-alpha.1",
-    "asset": "ps5-yamagi-runtime-overlay-v0.1.0-alpha.1.tar.gz",
-    "sha256": "2a5c952bb3fda49de2d8e6b19944bae956666f83cf2091f945d4461f39557eed",
-    "manifest_sha256": "4a3f0b68f33a051d2c2efe108c6efe10ded1b8c584e8250852c09fd5cdf6eb9e",
-    "runtime_sha256": "ca7298b024974bd26eb9456964c220db90b17a774eacf8d114fe3d5de4bbb888",
-    "base_source": "cef6c1b869ba3f0c8acaab5b171bbb33eca07f03",
+    "tag": "v0.1.0-alpha.3",
+    "asset": "ps5-yamagi-sdk-1080p-v0.1.0-alpha.3.tar.gz",
+    "directory": "ps5-yamagi-sdk-1080p-v0.1.0-alpha.3",
+    "sha256": "7f970eefc4c18aa69bfae5ec311e9669caf34cda737bdc6d82e36aa5c710d3e9",
+    "manifest_sha256": "27fbc1ac29085a5edcb0dc60b9e63bc834284000dcdf439595ba38bf32d73f0b",
+    "runtime_sha256": "c4e245cc8989257b5c9617250b906091f5e463716d3ca555c2a0e5e42670cc40",
+    "base_source": "32ca4d4e16c0f29d75b4ae82b74c2df6e1e067bf",
     "resolution": "1920x1080"
   },
   "pacbrew": {
@@ -29,10 +30,6 @@
   },
   "opengl": {
     "repository": "blackbearreloaded/ps5-opengl",
-    "tag": "v0.1.0-perf20260907-sampled",
-    "asset": "ps5-opengl-sdk-0.1.0-perf20260907-sampled.tar.gz",
-    "sha256": "1e7d9cd3c4355e8d43c3f1697867e95c04cb7f641fa61cfd4e371857a0b2b6a8",
-    "directory": "ps5-opengl-sdk-0.1.0-perf20260907-sampled",
-    "manifest_sha256": "03e535ec8853475385034759e7bc7e63b37ef275591912e3391669b027bd09fc"
+    "revision": "32ca4d4e16c0f29d75b4ae82b74c2df6e1e067bf"
   }
 }

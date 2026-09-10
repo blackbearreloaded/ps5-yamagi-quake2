@@ -6,6 +6,16 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # 1080p performance
 
+## Current SDK integration
+
+The September 9 candidate uses PS5 OpenGL source `32ca4d4` at 1920x1080/60 Hz.
+The owner reported 60 FPS everywhere tested, including underwater; the captured
+game trace also ran at approximately 60 FPS. This is bounded gameplay evidence
+on the recorded firmware-6.02 console. The new runtime includes the previous
+game-specific allocation/texture-cache improvements and newer transfer/clear paths.
+
+## Previous runtime baseline
+
 Hardware evidence is scoped to one firmware-6.02 console, the Quake II 3.14
 demo, and bounded sessions. The final interactive test was reported as stable
 60 FPS during movement and firing. An every-60-frames trace contained 66
@@ -38,8 +48,8 @@ performance cost. The top-left FPS overlay uses wall-clock frame intervals.
 
 ## Boundaries
 
-The frozen game SDK is an adaptation of PS5 OpenGL source
-`cef6c1b869ba3f0c8acaab5b171bbb33eca07f03`; its archive identity is recorded in
+The frozen game SDK uses PS5 OpenGL source
+`32ca4d4e16c0f29d75b4ae82b74c2df6e1e067bf`; its archive identity is recorded in
 `dependencies.json`. Focused regressions are included. It is not a general
 graphics SDK qualification or a new full CTS campaign.
 

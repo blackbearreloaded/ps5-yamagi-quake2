@@ -31,6 +31,12 @@
 
 #include <stdio.h>
 
+#ifdef YQ2_PS5
+#include "ps5_opengl_display.h"
+_Static_assert(PS5_OPENGL_NATIVE_WIDTH == 1920 && PS5_OPENGL_NATIVE_HEIGHT == 1080 &&
+               PS5_OPENGL_NATIVE_FPS == 60, "This release requires the 1080p60 SDK");
+#endif
+
 #define PS5_GL3_PLATFORM_VERSION 1
 #define PS5_NATIVE_WIDTH 1920
 #define PS5_NATIVE_HEIGHT 1080

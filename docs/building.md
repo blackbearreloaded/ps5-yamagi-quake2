@@ -6,83 +6,52 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Build and dependency reproduction
 
-The supported app build uses the frozen 1920×1080 game SDK in
-`dependencies.json`. `make deps` checks source revisions, verifies the downloaded
-PS5 OpenGL GitHub release archive and the small game overlay, validates their
-manifests and restores the public native toolchain. Every upstream SDK archive
-except the game-adapted runtime remains byte-identical to the OpenGL release.
-Native compilation then fetches hash-pinned PacBrew SDL2 if needed. These caches
-are local and ignored by Git. Python 3.12 is required for safe tar extraction.
+The supported release uses the frozen 1920x1080/60 Hz SDK in
+`dependencies.json`. Run `make deps`, `make test`, then `make package`.
+Python 3.12+, Clang, Make, SDL2 and Mesa development libraries are required;
+native builds also use Clang/LLD 18 and the pinned public payload toolchain.
 
-The published native-app revision is combined with
-`patches/0003-native-relro-alignment.patch`, reproducing the tested local
-packaging fix without relying on its unpublished commit.
-
-The repository can remain private: `gh auth login` must authenticate an account
-with access to download its runtime overlay release asset. In Actions, `GH_TOKEN` is supplied
-from the repository token. The manual native job has contents-write permission
-to attach requested release artifacts; the host job remains read-only.
-No token is written into source or bundles.
-
-While PS5 OpenGL is private, native CI first fetches an unchanged copy of its
-release archive from this game's private release. The ordinary bootstrap still
-downloads directly from `blackbearreloaded/ps5-opengl`. Both paths verify the
-same upstream SHA-256 before extraction; the cache is not a different SDK build.
-This avoids giving Actions a personal token with access to other repositories.
+`make deps` downloads the complete game SDK from this repository's release,
+verifies the archive and SDK checksums, and preserves its source archives and
+licenses under `.deps/ps5-yamagi-sdk-1080p-v0.1.0-alpha.3/`.
+This is the exact SDK used by the owner-tested current-runtime candidate;
+it includes the optimized OpenGL source at `32ca4d4`, built for 1080p60.
+It contains the buffer-pool and texture-flush improvements upstream, so the
+historical G7 patch is not reapplied to it.
 
 | Dependency | Pin |
 | --- | --- |
 | Yamagi 8.70 | `76e81f9f3fc3ed859006d81904bfeb6cb33fb525` |
-| Native-app boilerplate | `722f2227a8bb6fa2229120546995b6562552c752` |
-| Public PS5 Payload SDK | `v0.42`, hash checked by the pinned boilerplate |
-| PacBrew | `v0.40.2`, hash checked by the pinned boilerplate |
-| Game OpenGL source base | `cef6c1b869ba3f0c8acaab5b171bbb33eca07f03` |
-| Frozen SDK manifest SHA-256 | `4a3f0b68f33a051d2c2efe108c6efe10ded1b8c584e8250852c09fd5cdf6eb9e` |
-| Frozen runtime archive SHA-256 | `ca7298b024974bd26eb9456964c220db90b17a774eacf8d114fe3d5de4bbb888` |
+| Native app boilerplate | `722f2227a8bb6fa2229120546995b6562552c752` plus the tracked RELRO patch |
+| Public payload SDK / PacBrew SDL2 | `v0.42` / `v0.40.2`, archive hashes checked |
+| OpenGL source | `32ca4d4e16c0f29d75b4ae82b74c2df6e1e067bf` |
+| SDK manifest | `27fbc1ac29085a5edcb0dc60b9e63bc834284000dcdf439595ba38bf32d73f0b` |
+| Runtime archive | `c4e245cc8989257b5c9617250b906091f5e463716d3ca555c2a0e5e42670cc40` |
 
-`make check` verifies SDK and helper hashes. `make test` runs the host contracts,
-input queue/save tests, lifecycle, native resolver, FPS, triangle/world batching,
-particle GLSL rendering, glyph and PCM regressions. It needs a host SDL2 library,
-Mesa EGL/GL and glslang; it does not need game data or a console.
+The repository can remain private: authenticate `gh` with access to this
+repository. Actions uses its repository token; no cross-repository token is
+needed. Existing dependency caches with different pins must be moved aside
+explicitly. Bootstrap does not silently overwrite them.
 
-`make native` stages a patched Yamagi checkout under `build/ps5-native-fixed/`,
-builds the native executable and clean-room libc, validates the already converted
-presentation assets. `make package` adds the hash-pinned official demo and its
-original notices to `dist/PPSA99007.zip`. Packaging uses an explicit file allowlist
-and rejects unexpected files left in the output folder, including saves or retail data.
+`make check` validates frozen source, SDK and native helper hashes. `make test`
+runs host input/save, lifecycle, resolver, geometry, particle, audio and package
+regressions. `make native` stages a complete build under `build/ps5-native-fixed/`.
+`make package` adds the hash-verified official demo and original notices to
+`dist/PPSA99007.zip`, with an accompanying SHA-256 file.
 
-`make ffpfsc` then compresses that same allowlisted folder with MkPFS
-`6cb8313dfe0c988ac52617794553f343243d3a56`, restored through the existing
-boilerplate helper. MkPFS `--verify` checks the image contents before the build
-writes `PPSA99007.ffpfsc.sha256`. The image is also unpacked, compared byte-for-byte
-with the source folder and checked for its required startup assets. Python venv
-support is required. The resulting image includes the demo and can launch directly.
+GitHub Actions publishes the folder ZIP only. FFPFSC downloads were withdrawn
+after a console startup failure despite passing offline round-trip checks.
+The legacy local `make ffpfsc` target is experimental and is not a supported
+installation method.
 
-The public source archive supplied with the release includes the game repository
-and the pinned Yamagi source tree. The extracted OpenGL release's `sources/`
-includes Mesa, PSBC and other dependency sources. The game overlay also supplies
-the exact runtime source base and changed screen source. Apply the game patch from
-this repository to Yamagi; keep dependency notices with redistributed binaries.
+The SDK bundle includes full graphics/dependency sources and a rebuild guide.
+To reproduce the runtime, prepare the pinned OpenGL Mesa/PSBC sources and build
+with `PS5_SCANOUT_HEIGHT=1080 PS5_SCANOUT_FPS=60 PS5_GPU_PRESENT_BATCH=1
+PS5_DEFERRED_DRAW_BATCH=1 PS5_DRAW_PROFILE=0`. The SDK used Clang 21.1.8.
+Changed compiler/debug paths may change binary hashes and need new validation.
+The game uses the current 128 MiB native heap helper with all six allocator
+wraps, and retains the tested PacBrew SDL2 input/audio integration.
 
-## Rebuilding the experimental graphics SDK from source
-
-Normal app builds consume the frozen SDK. Rebuilding that SDK is a separate
-developer workflow and may produce different bytes with another compiler/path.
-The OpenGL GitHub release supplies the G7 base SDK. The overlay's
-`sources/game-changes/` contains the original compile flags and game delta.
-
-Restore the OpenGL source/dependencies following its pinned `docs/building.md`,
-and copy the release's `sdk/` under `.deps/ps5-opengl-core33-g7-60fps/` in this
-repository. Relocate the original compile flags to your source/compiler paths in
-the OpenGL checkout's `build/core33-native-runtime/runtime-config.txt`.
-Then run:
-
-```bash
-python3 tools/build-buffer-sdk.py /path/to/ps5-opengl --texture-flush
-```
-
-The recipe checks base hashes, applies the buffer-only arena change and texture
-flush patch, and verifies that only `ps5_screen.o` changed in the archive.
-Its output is separate from `.deps/game-sdk`; do not replace the frozen SDK or
-change release pins without a new validation campaign. The optional 4K recipe
-is experimental and deliberately rejected by the 1080p release `make check`.
+The developer-tested candidate reached 60 FPS including underwater. CI rebuilds
+the application independently using the same SDK; its new executable is not
+byte-identical to the development build and retains its own validation scope.

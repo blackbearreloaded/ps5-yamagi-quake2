@@ -28,7 +28,7 @@ source-file headers; their notices and terms remain as described below.
 | --- | --- |
 | Yamagi Quake II 8.70 and id Software engine/game code | [Pinned source](https://github.com/yquake2/yquake2/tree/76e81f9f3fc3ed859006d81904bfeb6cb33fb525), GPL-2.0-or-later and bundled component notices |
 | Native app boilerplate / clean-room libc | [Pinned source](https://github.com/blackbearreloaded/ps5-native-app-boilerplate/tree/722f2227a8bb6fa2229120546995b6562552c752), GPL-3.0-or-later and retained notices |
-| PS5 OpenGL | [Pinned base](https://github.com/blackbearreloaded/ps5-opengl/tree/cef6c1b869ba3f0c8acaab5b171bbb33eca07f03), GPL-3.0 and dependency-specific notices; game changes supplied here |
+| PS5 OpenGL | [Pinned source](https://github.com/blackbearreloaded/ps5-opengl/tree/32ca4d4e16c0f29d75b4ae82b74c2df6e1e067bf), GPL-3.0-or-later and dependency-specific notices; complete SDK sources accompany the release |
 | Mesa 26.2.0 / OpenGNM PSBC | Primarily MIT, with per-file exceptions; sources/licenses included in the SDK dependency archive |
 | SDL2 / PacBrew PS5 port | [PacBrew sources](https://github.com/ps5-payload-dev/pacbrew-repo), SDL zlib license and port/component notices; pinned binary distribution v0.40.2 |
 | Public PS5 Payload SDK v0.42 | [Source](https://github.com/ps5-payload-dev/sdk/tree/v0.42), component-specific licenses; separate build dependency |

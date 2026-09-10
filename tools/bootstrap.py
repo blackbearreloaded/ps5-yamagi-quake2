@@ -47,7 +47,7 @@ def main():
     if not destination.exists():
         with tempfile.TemporaryDirectory(prefix='opengl-', dir=cache) as folder:
             work = Path(folder)
-            for pin in (pins['opengl'], sdk):
+            for pin in (sdk,):
                 archive = cache / pin['asset']
                 if not archive.exists():
                     run('gh', 'release', 'download', pin['tag'], '--repo', pin['repository'],
@@ -58,14 +58,13 @@ def main():
                     raise SystemExit(f'{archive}: SHA-256 mismatch; refusing extraction')
                 with tarfile.open(archive) as source:
                     source.extractall(work, filter='data')
-            base = work / pins['opengl']['directory']
+            base = work / sdk['directory']
             run('sha256sum', '--check', '--strict', '--quiet', 'manifest.sha256', cwd=base / 'sdk')
             shutil.copytree(base / 'sdk', work / 'game-sdk')
-            shutil.copytree(work / 'game-overlay', work / 'game-sdk', dirs_exist_ok=True)
             run('sha256sum', '--check', '--strict', '--quiet', 'manifest.sha256', cwd=work / 'game-sdk')
             (work / 'game-sdk').rename(destination)
             # Preserve upstream sources and notices alongside the consumer SDK.
-            source_cache = cache / pins['opengl']['directory']
+            source_cache = cache / sdk['directory']
             if not source_cache.exists():
                 base.rename(source_cache)
     run('bash', str(ROOT / 'tools/check.sh'))
