@@ -44,7 +44,7 @@ extern refimport_t ri;
 
 static struct {
 	long long draw_us, buffer_us, clear_us, previous_us;
-	long long stage_start, stage_us[4];
+	long long stage_start, stage_us[5];
 	unsigned draws, frames;
 } profile;
 static PFNGLDRAWARRAYSPROC native_draw_arrays;
@@ -56,7 +56,7 @@ static PFNGLCLEARPROC native_clear;
 void PS5_RenderStage(unsigned stage)
 {
 	long long now = Sys_Microseconds();
-	if (stage > 0 && stage <= 4)
+	if (stage > 0 && stage <= 5)
 		profile.stage_us[stage - 1] += now - profile.stage_start;
 	profile.stage_start = now;
 }
@@ -111,9 +111,10 @@ static void profile_frame(long long swap_us)
 	++profile.frames;
 	if (profile.frames <= 10 || profile.frames % 60 == 0 || total > 1000000)
 	{
-		fprintf(stderr, "[yamagi-profile] frame=%u draws=%u total_us=%lld draw_us=%lld buffer_us=%lld clear_us=%lld swap_us=%lld world_us=%lld entities_us=%lld particles_us=%lld alpha_us=%lld\n",
+		fprintf(stderr, "[yamagi-profile] frame=%u draws=%u total_us=%lld draw_us=%lld buffer_us=%lld clear_us=%lld swap_us=%lld world_us=%lld entities_us=%lld particles_us=%lld alpha_us=%lld post_us=%lld underwater=%d\n",
 			profile.frames, profile.draws, total, profile.draw_us, profile.buffer_us, profile.clear_us, swap_us,
-			profile.stage_us[0], profile.stage_us[1], profile.stage_us[2], profile.stage_us[3]);
+			profile.stage_us[0], profile.stage_us[1], profile.stage_us[2], profile.stage_us[3],
+			profile.stage_us[4], (r_newrefdef.rdflags & RDF_UNDERWATER) != 0);
 		fflush(stderr);
 	}
 	profile.draw_us = profile.buffer_us = profile.clear_us = 0;
@@ -270,7 +271,8 @@ GL3_PrepareForWindow(void)
 int
 GL3_InitContext(void *window_token)
 {
-	if (window_token == NULL || !ps5_egl_open(&egl_state, 0))
+	const int *size = window_token;
+	if (size == NULL || !ps5_egl_open(&egl_state, 0, size[0], size[1]))
 		return false;
 	if (!gladLoadGLLoader((GLADloadproc)ps5_egl_get_proc_address) ||
 		GLVersion.major != 3 || GLVersion.minor < 3 ||
@@ -323,6 +325,11 @@ GL3_ShutdownContext(void)
 	{
 		Com_Printf("PS5: EGL shutdown reported an error\n");
 		ps5_record_failure();
+	}
+	else
+	{
+		/* The static renderer survives vid_restart; GL object names do not. */
+		memset(&gl3state, 0, sizeof(gl3state));
 	}
 	vsync_active = false;
 }

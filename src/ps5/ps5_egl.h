@@ -20,7 +20,7 @@ typedef struct
 	int accepted_swap_interval;
 } ps5_egl_state_t;
 
-int ps5_egl_open(ps5_egl_state_t *state, int swap_interval);
+int ps5_egl_open(ps5_egl_state_t *state, int swap_interval, int width, int height);
 int ps5_egl_set_swap_interval(ps5_egl_state_t *state, int swap_interval);
 int ps5_egl_query_size(const ps5_egl_state_t *state, int *width, int *height);
 int ps5_egl_swap(ps5_egl_state_t *state);

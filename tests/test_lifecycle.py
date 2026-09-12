@@ -34,6 +34,17 @@ static int fake_clock_gettime(clockid_t clock, struct timespec *value)
 #define clock_gettime fake_clock_gettime
 #define YQ2_PS5_RESULT_PATH result_path
 #include "src/ps5/ps5_lifecycle.c"
+#ifdef YQ2_PS5_MODE_BENCH
+static unsigned mode_commands;
+void Cbuf_AddText(char *text)
+{
+    const int modes[] = {21, 25, 29, 21, 25, 29};
+    char expected[48];
+    assert(mode_commands < 6 && presented_frames == (mode_commands + 1) * 600);
+    snprintf(expected, sizeof(expected), "set r_mode %d\nvid_restart\n", modes[mode_commands++]);
+    assert(!strcmp(text, expected));
+}
+#endif
 int main(int argc, char **argv)
 {
     assert(argc == 3);
@@ -43,10 +54,19 @@ int main(int argc, char **argv)
     ps5_frame_start();
     assert(strcmp(scenario, "clock-start")); /* Startup must reject bad clock. */
     if (!strcmp(scenario, "normal")) {
+#ifdef YQ2_PS5_MODE_BENCH
+        for (unsigned i = 0; i < 4200; ++i) ps5_record_present();
+        assert(mode_commands == 6);
+#else
         ps5_record_present();
         ps5_record_present();
+#endif
         fake_us += 70000000;
-        assert(ps5_frame_should_quit() == (YQ2_PS5_RUN_SECONDS > 0));
+        assert(ps5_frame_should_quit() == (YQ2_PS5_RUN_SECONDS > 0 && YQ2_PS5_RUN_SECONDS <= 70));
+#ifdef YQ2_PS5_MODE_BENCH
+        fake_us += 20000000;
+        assert(ps5_frame_should_quit());
+#endif
         assert(ps5_frame_stop(0) == 0);
     } else if (!strcmp(scenario, "cleanup")) {
         ps5_record_failure();
@@ -78,9 +98,11 @@ def main():
         temporary = Path(folder)
         source = temporary / "lifecycle.c"
         source.write_text(harness)
-        for bound in (0, 60):
+        for bound in (0, 60, 90):
             executable = temporary / f"lifecycle-{bound}"
             flags = [] if bound == 0 else [f"-DYQ2_PS5_RUN_SECONDS={bound}"]
+            if bound == 90:
+                flags += ["-DYQ2_PS5_MODE_BENCH=1"]
             subprocess.run([compiler, "-std=c11", "-Wall", "-Wextra", "-Werror",
                             *flags, "-I", str(root), str(source), "-o", str(executable)], check=True)
             for scenario in ("normal", "cleanup", "clock-start", "clock-loop", "clock-event", "close-error"):
@@ -95,12 +117,12 @@ def main():
                 if scenario == "normal":
                     assert [event["event"] for event in events if event["event"] != "frame-progress"] == (
                         ["start", "first-frame"] + (["deadline"] if bound else []) + ["complete"])
-                    assert events[1]["frames"] == 1 and events[-1]["frames"] == 2
-                    assert events[-1]["elapsed_us"] == 70000000
+                    assert events[1]["frames"] == 1 and events[-1]["frames"] == (4200 if bound == 90 else 2)
+                    assert events[-1]["elapsed_us"] == (90000000 if bound == 90 else 70000000)
                 elif scenario != "close-error":
                     assert events[-1]["event"] == "failed"
                 assert f"shutdown status={int(scenario != 'normal')}" in result.stdout
-    print("PASS: actual lifecycle, unlimited >60s, bounded stop, first frame, clock and cleanup failures")
+    print("PASS: actual lifecycle, unlimited >60s, bounded stop, six queued mode changes, clock and cleanup failures")
 
 
 if __name__ == "__main__":

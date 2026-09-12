@@ -5,6 +5,7 @@
  */
 
 #include "ps5_egl.h"
+#include "ps5_opengl_display.h"
 
 #include <EGL/eglext.h>
 
@@ -30,7 +31,7 @@ ps5_egl_reset(ps5_egl_state_t *state)
 }
 
 int
-ps5_egl_open(ps5_egl_state_t *state, int swap_interval)
+ps5_egl_open(ps5_egl_state_t *state, int swap_interval, int width, int height)
 {
 	static const EGLint config_attributes[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -65,6 +66,15 @@ ps5_egl_open(ps5_egl_state_t *state, int swap_interval)
 	{
 		ps5_egl_log_error("eglGetDisplay");
 		goto fail;
+	}
+	typedef EGLBoolean (EGLAPIENTRYP set_mode_t)(EGLDisplay, EGLint, EGLint);
+	set_mode_t set_mode = (set_mode_t)eglGetProcAddress("eglSetDisplayModePS5");
+	if ((set_mode && !set_mode(state->display, width, height)) ||
+		(!set_mode && (width != PS5_OPENGL_NATIVE_WIDTH || height != PS5_OPENGL_NATIVE_HEIGHT)))
+	{
+		ps5_egl_log_error("eglSetDisplayModePS5");
+		ps5_egl_reset(state); /* No display initialization or resources to tear down. */
+		return 0;
 	}
 	if (!eglInitialize(state->display, &major, &minor))
 	{

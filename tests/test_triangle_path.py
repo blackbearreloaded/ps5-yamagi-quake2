@@ -116,6 +116,9 @@ static gl3image_t *R_TextureAnimation(entity_t *entity, texinfo_t *info) { retur
 static void SetLightFlags(msurface_t *s) {
  for(int i=0;i<s->polys->numverts;++i) s->polys->vertices[i].lightFlags=(unsigned)s->polys->vertices[i].attributes[0];
 }
+static void SetAllLightFlags(msurface_t *s) {
+ for(int i=0;i<s->polys->numverts;++i) s->polys->vertices[i].lightFlags=~0u;
+}
 static void RenderBrushPoly(entity_t *entity,msurface_t *s,const gl3_3D_vtx_t *v,int count) {
  assert(count>0 && count<=4095 && count%3==0);
  int k=0;
@@ -159,7 +162,7 @@ int main(void) {
   surfaces[i].polys=&polygons[i]; surfaces[i].texinfo=&info[0];
   surfaces[i].texturechain=i==699 ? NULL : &surfaces[i+1];
  }
- for(msurface_t *s=surfaces;s;s=s->texturechain) assert(BatchTextureChain(NULL,&s));
+ for(msurface_t *s=surfaces;s;s=s->texturechain) assert(BatchTextureChain(NULL,&s,false));
  assert(surface_draws==2 && c_brush_polys==700 && surface_vertices==4200);
  surfaces[1].texinfo=&info[1];
  for(int boundary=0;boundary<5;++boundary) {
@@ -171,11 +174,11 @@ int main(void) {
   if(boundary==3) info[1].image=&images[1];
   if(boundary==4) surfaces[1].flags=SURF_DRAWTURB;
   msurface_t *s=surfaces; int before=surface_vertices;
-  assert(BatchTextureChain(NULL,&s) && s==surfaces && surface_vertices==before+6);
+  assert(BatchTextureChain(NULL,&s,false) && s==surfaces && surface_vertices==before+6);
  }
  msurface_t *s=surfaces;
- info[0].flags=SURF_TRANS33; assert(!BatchTextureChain(NULL,&s) && s==surfaces);
- info[0].flags=0; polygons[0].numverts=2000; assert(!BatchTextureChain(NULL,&s));
+ info[0].flags=SURF_TRANS33; assert(!BatchTextureChain(NULL,&s,false) && s==surfaces);
+ info[0].flags=0; polygons[0].numverts=2000; assert(!BatchTextureChain(NULL,&s,false));
  for(int i=0;i<700;++i) {
   surfaces[i].flags=0; surfaces[i].texinfo=&info[0]; polygons[i].numverts=4;
   surfaces[i].lightmaptexturenum=i%3; surfaces[i].styles[0]=i%2;
@@ -189,7 +192,7 @@ int main(void) {
   previous[key]=index;
  }
  surface_draws=surface_vertices=c_brush_polys=0;
- for(;s;s=s->texturechain) assert(BatchTextureChain(NULL,&s));
+ for(;s;s=s->texturechain) assert(BatchTextureChain(NULL,&s,false));
  assert(surface_draws==6 && c_brush_polys==700 && surface_vertices==4200);
  for(int i=0;i<700;++i) surfaces[i].texturechain=i==699 ? NULL : &surfaces[i+1];
  surfaces[350].flags=SURF_DRAWTURB; s=surfaces; SortTextureChain(NULL,&s);

@@ -29,6 +29,8 @@ with tempfile.TemporaryDirectory() as folder:
 #include <string.h>
 #include <glad/glad.h>
 static long long clock_us = 1;
+#define RDF_UNDERWATER 1
+static struct { int rdflags; } r_newrefdef = {RDF_UNDERWATER};
 static long long Sys_Microseconds(void) { return clock_us; }
 static struct { float value; } enabled = {1}, *cl_showfps = &enabled;
 static float SCR_GetConsoleScale(void) { return 2; }
@@ -64,12 +66,13 @@ int main(void) {
     assert(profile.draws == 2 && profile.draw_us == 5000);
     assert(profile.buffer_us == 4000 && profile.clear_us == 5000);
     PS5_RenderStage(0);
-    for(unsigned i=1;i<=4;++i) { clock_us+=i*100; PS5_RenderStage(i); }
+    for(unsigned i=1;i<=5;++i) { clock_us+=i*100; PS5_RenderStage(i); }
     assert(profile.stage_us[0]==100 && profile.stage_us[1]==200);
     assert(profile.stage_us[2]==300 && profile.stage_us[3]==400);
+    assert(profile.stage_us[4]==500);
     profile_frame(1000);
     assert(!profile.draws && !profile.draw_us && !profile.buffer_us && !profile.clear_us);
-    for(unsigned i=0;i<4;++i) assert(profile.stage_us[i]==0);
+    for(unsigned i=0;i<5;++i) assert(profile.stage_us[i]==0);
     int vertices[4] = {1,2,3,4};
     upload_count = 0;
     profile_buffer_data(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);

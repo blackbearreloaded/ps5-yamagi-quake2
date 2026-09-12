@@ -34,6 +34,11 @@ contract:
 	python3 tests/test_lifecycle.py
 	python3 tests/test_video_size.py
 	python3 tests/test_video_menu.py
+	python3 tests/test_depth_clear.py
+	python3 tests/test_water_batch.py
+	python3 tests/test_inline_brush.py
+	python3 tests/test_renderer_restart.py
+	python3 tests/test_opening_bench.py
 	python3 tests/test_game_data.py
 	python3 tests/test_realpath.py
 	python3 tests/test_native_resolver.py

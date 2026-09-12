@@ -110,6 +110,20 @@ void
 ps5_record_present(void)
 {
 	++presented_frames;
+#ifdef YQ2_PS5_MODE_BENCH
+	/* Queue the existing renderer restart after this completed frame. */
+	if (presented_frames % 600 == 0 && presented_frames <= 3600)
+	{
+		extern void Cbuf_AddText(char *text);
+		const int modes[] = { 21, 25, 29, 21, 25, 29 };
+		const int mode = modes[presented_frames / 600 - 1];
+		char command[48];
+		snprintf(command, sizeof(command), "set r_mode %d\nvid_restart\n", mode);
+		printf("[yamagi-mode-bench] frame=%llu target_mode=%d\n",
+			(unsigned long long)presented_frames, mode);
+		Cbuf_AddText(command);
+	}
+#endif
 	if (presented_frames == 1) ps5_write_event("first-frame");
 	if (presented_frames <= 5 || presented_frames % 120 == 0)
 		ps5_write_event("frame-progress");

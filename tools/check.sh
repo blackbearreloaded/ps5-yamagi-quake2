@@ -8,7 +8,7 @@ set -euo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 prefix=$(realpath -- "${PS5_OPENGL_PREFIX:-$root/.deps/game-sdk}")
 manifest=$(sha256sum "$prefix/manifest.sha256" | cut -d' ' -f1)
-[[ $manifest == 27fbc1ac29085a5edcb0dc60b9e63bc834284000dcdf439595ba38bf32d73f0b ]] || { echo "FAIL: expected the frozen current 1080p SDK." >&2; exit 1; }
+[[ $manifest == e73d2a40c5c67bd15c6cf1805c2ec4890286e311811d0546f0656a36e267fa99 ]] || { echo "FAIL: expected the frozen selectable-resolution 120 Hz SDK." >&2; exit 1; }
 (cd "$prefix" && sha256sum --check --strict manifest.sha256 >/dev/null)
 [[ $(git -C "$root/upstream/yquake2" rev-parse HEAD) == 76e81f9f3fc3ed859006d81904bfeb6cb33fb525 ]] || {
     echo 'FAIL: Yamagi base commit differs from the handoff.' >&2; exit 1;

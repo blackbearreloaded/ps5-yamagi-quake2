@@ -30,12 +30,15 @@
 #define _POSIX_C_SOURCE 200809L
 #include "../../upstream/yquake2/src/common/header/common.h"
 #include "ps5_lifecycle.h"
+#include "ps5_opengl_display.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 
 extern qboolean stdin_active;
+#define PS5_STRINGIFY_INNER(value) #value
+#define PS5_STRINGIFY(value) PS5_STRINGIFY_INNER(value)
 void setCustomCfgDir(const char *dir);
 int sceSystemServiceLoadExec(const char *path, const char **args);
 _Noreturn void catchReturnFromMain(int status);
@@ -54,7 +57,17 @@ int main(void)
 {
     char *args[] = { "yquake2", "+set", "vid_renderer", "gl3",
         "+set", "vid_fullscreen", "1", "+set", "r_vsync", "1",
-        "+set", "vid_maxfps", "60", "+menu_main", NULL };
+        "+set", "vid_maxfps", PS5_STRINGIFY(PS5_OPENGL_NATIVE_FPS),
+#ifdef YQ2_PS5_OPENING_BENCH
+#ifdef YQ2_PS5_MODE_BENCH
+        "+set", "r_mode", "29",
+#endif
+        "+set", "deathmatch", "0", "+set", "coop", "0",
+        "+set", "maxclients", "1", "+map", "demo1",
+#else
+        "+menu_main",
+#endif
+        NULL };
     const char *save_dir = "/download0/yamagi";
     const char *probe = "/download0/yamagi/.write-check";
     struct stat info;

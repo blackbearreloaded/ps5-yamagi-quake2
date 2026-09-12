@@ -3,7 +3,7 @@
 # Copyright (C) 2026 BlackBearReloaded
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Restore immutable source pins and the release's frozen 1080p SDK."""
+"""Restore immutable source pins and the release's frozen selectable-resolution SDK."""
 import argparse
 import hashlib
 import json

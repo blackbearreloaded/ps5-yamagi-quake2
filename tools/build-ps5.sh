@@ -8,6 +8,16 @@ set -euo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 template=${PS5_NATIVE_APP_TEMPLATE:-"$root/.deps/native-app"}
 prefix=${PS5_OPENGL_PREFIX:-"$root/.deps/game-sdk"}
+case "${YQ2_PS5_OPENING_BENCH:-0}" in
+    0) app_definitions='YQ2_PS5 NO_SDL_GYRO' ;;
+    1) app_definitions='YQ2_PS5 NO_SDL_GYRO YQ2_PS5_OPENING_BENCH=1 YQ2_PS5_RUN_SECONDS=45' ;;
+    *) echo 'YQ2_PS5_OPENING_BENCH must be 0 or 1' >&2; exit 2 ;;
+esac
+case "${YQ2_PS5_MODE_BENCH:-0}" in
+    0) ;;
+    1) app_definitions='YQ2_PS5 NO_SDL_GYRO YQ2_PS5_OPENING_BENCH=1 YQ2_PS5_MODE_BENCH=1 YQ2_PS5_RUN_SECONDS=90' ;;
+    *) echo 'YQ2_PS5_MODE_BENCH must be 0 or 1' >&2; exit 2 ;;
+esac
 patch_file="$root/patches/0001-ps5-static-gl3-lifecycle.patch"
 # Build in an isolated stage; dependencies and the upstream checkout stay intact.
 stage="$root/build/ps5-native-fixed"
@@ -119,7 +129,7 @@ test -s "$compiler_runtime"
 } > "$stage/vendor/libps5_opengl_group.a"
 
 printf '%s\n' \
-	'APP_DEFINITIONS=YQ2_PS5 NO_SDL_GYRO' \
+	"APP_DEFINITIONS=$app_definitions" \
 	'APP_INCLUDE_PATHS=include src/ps5 src/client/refresh/gl3/glad/include' \
 	'APP_STATIC_ARCHIVES=vendor/libps5_opengl_group.a' \
 	'PACBREW_PACKAGES=sdl2' > "$stage/.env"

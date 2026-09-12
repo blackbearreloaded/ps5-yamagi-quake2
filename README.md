@@ -18,11 +18,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 <p align="center"><img src="sce_sys/icon0.png" width="128" alt="Yamagi Quake II icon"></p>
 <h1 align="center">Yamagi Quake II for PS5</h1>
-<p align="center"><strong>Quake II, running natively on PlayStation 5 homebrew.</strong><br>1080p OpenGL rendering, DualSense controls, sound and local saves.</p>
+<p align="center"><strong>Quake II, running natively on PlayStation 5 homebrew.</strong><br>1080p, 1440p or 4K OpenGL rendering at a 120 FPS target, with DualSense controls, sound and local saves.</p>
 <p align="center">
   <img src="https://img.shields.io/badge/platform-PlayStation%205-003791" alt="PlayStation 5">
   <img src="https://img.shields.io/badge/renderer-OpenGL%203.3-5586A4" alt="OpenGL 3.3">
-  <img src="https://img.shields.io/badge/target-1080p60-5DDFA4" alt="1080p60 target">
+  <img src="https://img.shields.io/badge/target-4K120-5DDFA4" alt="4K120 target">
   <img src="https://img.shields.io/badge/status-alpha-EF8354" alt="Alpha">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="GPL-3.0-or-later"></a>
 </p>
@@ -34,13 +34,14 @@ Demo available by clicking the image below.
 ## Highlights
 
 - Based on Yamagi Quake II 8.70, with a native PS5 lifecycle and static GL3 renderer.
-- Powered by [PS5 OpenGL](https://github.com/blackbearreloaded/ps5-opengl), using the current optimized runtime in a frozen 1080p60 SDK with complete sources.
-- Renders at **1920 × 1080**, targeting 60 FPS, with an FPS overlay at the top left.
+- Powered by [PS5 OpenGL](https://github.com/blackbearreloaded/ps5-opengl), using a frozen optimized game SDK with complete sources and the game-specific runtime patches.
+- Choose **1920 × 1080**, **2560 × 1440** or **3840 × 2160**, all targeting **120 FPS**, with an FPS overlay at the top left.
+- Change resolution from the Video menu and keep your selection across launches. A fresh configuration defaults to 4K.
 - DualSense input is sampled independently of rendering, preserving short button presses.
 - Stereo sound, controller defaults, writable saves and configuration.
 - Custom shell icon, selection/launch backgrounds and looping selection music.
 - Includes the renderer patches and host regressions used to resolve startup, input, audio and performance problems.
-- The latest SDK integration was tested at 60 FPS throughout the owner's bounded gameplay check, including underwater.
+- The optimized 4K candidate reached owner-reported 120 FPS throughout a bounded gameplay check, including the previously slow opening and underwater areas.
 
 This app requires an already configured, compatible PS5 homebrew environment.
 It contains no exploit, proprietary Sony SDK or firmware modules.
@@ -50,9 +51,9 @@ packaging and remain outside Git; their original license and readme accompany th
 
 ## Install
 
-1. Download `PPSA99007.zip` and verify it against `SHA256SUMS` from the
-   [release page](https://github.com/blackbearreloaded/ps5-yamagi-quake2/releases)
-   using its accompanying `.sha256` file.
+1. Download `PPSA99007.zip` and its accompanying `.sha256` file from the
+   [release page](https://github.com/blackbearreloaded/ps5-yamagi-quake2/releases).
+   Verify the ZIP's SHA-256 before extracting it.
 2. Extract the archive. Demo data is already present in `PPSA99007/assets/baseq2/`.
    To use your own retail game, see [game data setup](docs/game-data.md).
 3. Copy the complete `PPSA99007` folder into your loader's homebrew directory,
@@ -99,17 +100,30 @@ Back up that directory before replacing an existing installation.
 Defaults are in [yq2.cfg](assets/baseq2/yq2.cfg). Existing user `config.cfg`
 and `autoexec.cfg` load afterward and can override them.
 
+## Resolution and refresh rate
+
+Open **Video → Video mode**, choose **1080p**, **1440p** or **2160p**, then
+select **Apply**. The renderer restarts at that resolution and saves the
+selection immediately. All three modes use a **120 Hz presentation target**.
+
+This setting changes the game's render resolution. The console manages the
+HDMI output separately, so a TV can continue to report **4K / 120 Hz** at every
+setting: lower-resolution frames are scaled for that output. This is expected.
+Use the in-game FPS overlay to judge actual rendering speed; the TV's HDMI
+status reports the signal format. A compatible display and console output
+configuration are needed to display 120 Hz.
+
 ## Performance and current limits
 
-The final 1080p candidate achieved **user-reported stable 60 FPS** while moving
-and firing in a bounded demo-level test on **one PS5 running firmware 6.02**.
-This is an alpha result, not a guarantee for every scene or console. Sampled
-timings still include occasional frames around 33 ms. See [performance notes](docs/performance.md).
+The optimized 4K candidate achieved **user-reported 120 FPS throughout the
+tested areas**, including the opening and underwater, on **one PS5 running
+firmware 6.02**. A separate automated test completed six resolution switches;
+steady 120-frame windows measured about 119.9 FPS at 1080p and 1440p and
+117–120 FPS at 2160p. See [performance notes](docs/performance.md) for scope.
 
-The release uses a frozen, game-specific OpenGL runtime with buffer allocation
-and texture-flush optimizations. It does not inherit a full CTS qualification
-from an older runtime. A separate 2160p experiment ran around 30–60 FPS and is
-not the release build.
+The release combines draw batching, texture and buffer reuse, GPU depth clears,
+and presentation/CPU overlap. Its focused game regressions do not constitute
+a full graphics CTS campaign or a guarantee for every scene or console.
 
 Retail campaigns, expansion packs, multiplayer, long sessions, suspend/resume
 and device-loss recovery remain unqualified. Single-mip textures are the fast
@@ -126,21 +140,17 @@ sudo apt install build-essential clang clang-18 lld-18 llvm-18 make python3 pyth
   pkg-config wget unzip libssl-dev libsdl2-dev libegl1-mesa-dev \
   libgl1-mesa-dri glslang-tools
 
-gh auth login                    # account with access while this repo is private
+gh auth login                    # authenticated GitHub release downloads
 make deps
 make package
-# Optional: also create the compressed image
-make ffpfsc
 ```
 
 Outputs: `dist/PPSA99007/`, `dist/PPSA99007.zip` and its checksum file.
-`make ffpfsc` additionally creates `dist/PPSA99007.ffpfsc` and its checksum,
-using pinned MkPFS with content verification enabled.
 Packaging downloads the official demo from Yamagi's mirror, checks its pinned
 SHA-256, and includes unchanged game assets and original notices. It also restores pinned
 Yamagi and native-app sources, the public homebrew toolchain, PacBrew SDL2 and
-the [PS5 OpenGL GitHub SDK](https://github.com/blackbearreloaded/ps5-opengl/releases/tag/v0.1.0-perf20260907-sampled),
-plus a small hash-pinned game runtime overlay. Graphics binaries are release dependencies, not Git blobs.
+the [frozen game SDK](https://github.com/blackbearreloaded/ps5-yamagi-quake2/releases/tag/v0.2.0-alpha.1)
+built from PS5 OpenGL. Graphics binaries are release dependencies, not Git blobs.
 See [dependencies and source reproduction](docs/building.md).
 
 For host checks only:
@@ -151,9 +161,9 @@ make test
 ```
 
 The [Build workflow](.github/workflows/build.yml) runs host regressions on pushes
-and pull requests. Manual dispatch builds and uploads the native ZIP, FFPFSC
-and their checksums using the frozen SDK release asset. Set the optional
-`release_tag` input to an existing release to publish both packages and checksums;
+and pull requests. Manual dispatch builds and uploads the native folder ZIP
+and its checksum using the frozen SDK release asset. Set the optional
+`release_tag` input to an existing release to publish the ZIP and checksum;
 leave it blank for CI artifacts only. Existing release files are not overwritten.
 Console testing is manual and separate.
 

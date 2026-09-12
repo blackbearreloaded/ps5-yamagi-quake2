@@ -31,22 +31,17 @@
 
 #include <stdio.h>
 
-#ifdef YQ2_PS5
 #include "ps5_opengl_display.h"
-_Static_assert(PS5_OPENGL_NATIVE_WIDTH == 1920 && PS5_OPENGL_NATIVE_HEIGHT == 1080 &&
-               PS5_OPENGL_NATIVE_FPS == 60, "This release requires the 1080p60 SDK");
-#endif
 
 #define PS5_GL3_PLATFORM_VERSION 1
-#define PS5_NATIVE_WIDTH 1920
-#define PS5_NATIVE_HEIGHT 1080
+#define PS5_NATIVE_WIDTH PS5_OPENGL_NATIVE_WIDTH
+#define PS5_NATIVE_HEIGHT PS5_OPENGL_NATIVE_HEIGHT
 
 extern refexport_t re;
 extern viddef_t viddef;
 
 float glimp_refreshRate = -1.0f;
 
-static cvar_t *vid_displayrefreshrate;
 static qboolean initialized;
 static const char *display_indices[] = { "0", NULL };
 
@@ -71,8 +66,10 @@ GLimp_GetNumVideoDisplays(void)
 qboolean
 GLimp_Init(void)
 {
-	vid_displayrefreshrate = Cvar_Get("vid_displayrefreshrate", "-1", CVAR_ARCHIVE);
-	Com_Printf("PS5 video: native fullscreen surface\n");
+	cvar_t *mode = Cvar_Get("r_mode", "29", CVAR_ARCHIVE);
+	if (mode->value != 21 && mode->value != 25 && mode->value != 29)
+		Cvar_SetValue("r_mode", 29);
+	Com_Printf("PS5 video: 1080p, 1440p or 2160p at %d Hz\n", PS5_OPENGL_NATIVE_FPS);
 	return true;
 }
 
@@ -88,17 +85,24 @@ GLimp_InitGraphics(int fullscreen, int *width, int *height)
 	(void)fullscreen;
 	if (width == NULL || height == NULL)
 		return false;
-	*width = PS5_NATIVE_WIDTH;
-	*height = PS5_NATIVE_HEIGHT;
+	const int requested[2] = { *width, *height };
+	if (!((requested[0] == 1920 && requested[1] == 1080) ||
+		(requested[0] == 2560 && requested[1] == 1440) ||
+		(requested[0] == 3840 && requested[1] == 2160)))
+		return false;
 	if (initialized)
 	{
 		re.GetDrawableSize(width, height);
-		return *width > 0 && *height > 0;
+		if (*width != requested[0] || *height != requested[1])
+			return false;
+		viddef.width = *width;
+		viddef.height = *height;
+		return true;
 	}
-	if (re.PrepareForWindow() < 0 || !re.InitContext((void *)1))
+	if (re.PrepareForWindow() < 0 || !re.InitContext((void *)requested))
 		return false;
 	re.GetDrawableSize(width, height);
-	initialized = *width > 0 && *height > 0;
+	initialized = *width == requested[0] && *height == requested[1];
 	if (!initialized)
 	{
 		Com_Printf("PS5: invalid drawable size %dx%d\n", *width, *height);
@@ -108,7 +112,6 @@ GLimp_InitGraphics(int fullscreen, int *width, int *height)
 	{
 		viddef.width = *width;
 		viddef.height = *height;
-		Com_Printf("PS5 video: drawable %dx%d\n", *width, *height);
 	}
 	return initialized;
 }
@@ -130,7 +133,7 @@ GLimp_GrabInput(qboolean grab)
 float
 GLimp_GetRefreshRate(void)
 {
-	return vid_displayrefreshrate != NULL ? vid_displayrefreshrate->value : -1.0f;
+	return PS5_OPENGL_NATIVE_FPS;
 }
 
 qboolean
@@ -141,7 +144,10 @@ GLimp_GetDesktopMode(int *width, int *height)
 	*width = PS5_NATIVE_WIDTH;
 	*height = PS5_NATIVE_HEIGHT;
 	if (initialized)
+	{
 		re.GetDrawableSize(width, height);
+		return *width > 0 && *height > 0;
+	}
 	return true;
 }
 

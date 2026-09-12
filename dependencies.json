@@ -11,14 +11,20 @@
   },
   "game_sdk": {
     "repository": "blackbearreloaded/ps5-yamagi-quake2",
-    "tag": "v0.1.0-alpha.3",
-    "asset": "ps5-yamagi-sdk-1080p-v0.1.0-alpha.3.tar.gz",
-    "directory": "ps5-yamagi-sdk-1080p-v0.1.0-alpha.3",
-    "sha256": "7f970eefc4c18aa69bfae5ec311e9669caf34cda737bdc6d82e36aa5c710d3e9",
-    "manifest_sha256": "27fbc1ac29085a5edcb0dc60b9e63bc834284000dcdf439595ba38bf32d73f0b",
-    "runtime_sha256": "c4e245cc8989257b5c9617250b906091f5e463716d3ca555c2a0e5e42670cc40",
+    "tag": "v0.2.0-alpha.1",
+    "asset": "ps5-yamagi-sdk-120hz-v0.2.0-alpha.1.tar.gz",
+    "directory": "ps5-yamagi-sdk-120hz-v0.2.0-alpha.1",
+    "sha256": "01e0df3f1ce138cbd25148038c88c9008236bac7f9f3aef9152af4553ecdfcaf",
+    "manifest_sha256": "e73d2a40c5c67bd15c6cf1805c2ec4890286e311811d0546f0656a36e267fa99",
+    "runtime_sha256": "f4641d706911fc5b72aa780efca52744bedf9173c6592a17815417abc90eeccf",
     "base_source": "32ca4d4e16c0f29d75b4ae82b74c2df6e1e067bf",
-    "resolution": "1920x1080"
+    "resolution": "3840x2160",
+    "selectable_resolutions": [
+      "1920x1080",
+      "2560x1440",
+      "3840x2160"
+    ],
+    "target_fps": 120
   },
   "pacbrew": {
     "tag": "v0.40.2",
