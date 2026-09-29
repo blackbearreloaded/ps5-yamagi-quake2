@@ -184,6 +184,8 @@ upstream/        Pinned Yamagi checkout restored here; ignored by Git
 
 ## Credits and license
 
+Built with the [PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk) by John Törnblom (ps5-payload-dev).
+
 Thanks to **id Software**, the **Yamagi Quake II** contributors,
 **ps5-payload-dev**, **PacBrew**, **SDL**, **Mesa**, **OpenGNM**, and contributors
 to [PS5 OpenGL](https://github.com/blackbearreloaded/ps5-opengl) and the
