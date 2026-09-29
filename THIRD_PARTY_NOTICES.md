@@ -1,4 +1,13 @@
-<!--
+# Third-party notices
+
+## Credits and acknowledgements
+
+Thanks to **id Software**, the **Yamagi Quake II** contributors,
+**ps5-payload-dev**, **PacBrew**, **SDL**, **Mesa**, **OpenGNM**, and contributors
+to [PS5 OpenGL](https://github.com/blackbearreloaded/ps5-opengl) and the
+[native-app boilerplate](https://github.com/blackbearreloaded/ps5-native-app-boilerplate).
+The repository organization follows [ProsperoAI](https://github.com/blackbearreloaded/ProsperoAI).
+
 PS5 Yamagi Quake II - Native Quake II port for PlayStation 5.
 Copyright (C) 2026 BlackBearReloaded
 SPDX-License-Identifier: GPL-3.0-or-later
