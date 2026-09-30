@@ -9,7 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 The project owner supplied quake2.mp3 for the shell selection music. The full
 approximately 44-second track is included as snd0.at9; the source MP3 is local.
 
-Converted using the manual workflow in the [ps5-at9-converter manual workflow](https://github.com/blackbearreloaded/ps5-at9-converter#manual-conversion-recommended):
+Converted with the manual FFmpeg and at9tool workflow below. [ps5-at9-converter](https://github.com/blackbearreloaded/ps5-at9-converter) now does the same preparation without external tools.
 - FFmpeg: remove metadata, loudnorm=I=-28:LRA=11:TP=-2, 48 kHz stereo PCM16.
 - User-supplied ps4_at9tool.exe: -e -br 192 -wholeloop.
 - Result: 1,055,400 bytes, below the 2,097,152-byte shell limit.
