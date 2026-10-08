@@ -10,6 +10,7 @@ from pathlib import Path
 import shutil
 import zipfile
 import json
+import subprocess
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tests'))
 from check_game_data import validate
@@ -68,9 +69,13 @@ def package(stage, demo=None):
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as output:
         for name in sorted(allowed):
             output.write(destination / name, 'PPSA99007/' + name)
+    # The console refuses an app whose files are not open to all (CE-107750-0).
+    subprocess.run([sys.executable, str(Path(__file__).resolve().parent / 'zip-open-modes.py'),
+                    str(archive)], check=True)
     with zipfile.ZipFile(archive) as output:
         assert output.testzip() is None
         assert set(output.namelist()) == {'PPSA99007/' + name for name in allowed}
+        assert all((info.external_attr >> 16) & 0o777 == 0o777 for info in output.infolist())
     with archive.open('rb') as file:
         digest = hashlib.file_digest(file, 'sha256').hexdigest()
     (ROOT / 'dist/PPSA99007.zip.sha256').write_text(f'{digest}  {archive.name}\n')

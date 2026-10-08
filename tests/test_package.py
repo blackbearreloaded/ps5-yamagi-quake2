@@ -26,6 +26,7 @@ with tempfile.TemporaryDirectory() as folder:
     with zipfile.ZipFile(module.ROOT / 'dist/PPSA99007.zip') as archive:
         assert archive.read('PPSA99007/eboot.bin') == b'fixture'
         assert not any(name.endswith('.pak') for name in archive.namelist())
+        assert all((info.external_attr >> 16) & 0o777 == 0o777 for info in archive.infolist())
     unexpected = module.ROOT / 'dist/PPSA99007/assets/baseq2/pak0.pak'
     unexpected.write_bytes(b'not-for-release')
     try:
