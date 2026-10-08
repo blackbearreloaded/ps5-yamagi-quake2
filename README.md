@@ -166,6 +166,9 @@ Run workflow) builds and uploads the native folder ZIP
 and its checksum using the frozen SDK release asset. Set the optional
 `release_tag` input to an existing release to publish the ZIP and checksum;
 leave it blank for CI artifacts only. Existing release files are not overwritten.
+A `PPSA99007.zip` built by the workflow can be checked with
+`gh attestation verify PPSA99007.zip -R blackbearreloaded/ps5-yamagi-quake2`
+(GitHub CLI); this covers releases built by GitHub Actions from now on, not earlier ones.
 Console testing is manual and separate.
 
 ## Project layout
