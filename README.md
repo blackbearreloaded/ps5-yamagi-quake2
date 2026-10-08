@@ -160,8 +160,9 @@ python3 tools/bootstrap.py --host-only
 make test
 ```
 
-The [Build workflow](.github/workflows/build.yml) runs host regressions on pushes
-and pull requests. Manual dispatch builds and uploads the native folder ZIP
+The [Build workflow](.github/workflows/build.yml) runs host regressions on pull
+requests; a push to `main` starts nothing. Manual dispatch (Actions → Build →
+Run workflow) builds and uploads the native folder ZIP
 and its checksum using the frozen SDK release asset. Set the optional
 `release_tag` input to an existing release to publish the ZIP and checksum;
 leave it blank for CI artifacts only. Existing release files are not overwritten.
