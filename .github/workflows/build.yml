@@ -4,8 +4,7 @@
 
 name: Build
 on:
-  push:
-    branches: [main]
+  # A build on main is started by hand (Run workflow): pushes to main build nothing.
   pull_request:
   workflow_dispatch:
     inputs:
