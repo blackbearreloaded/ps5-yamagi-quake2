@@ -165,7 +165,11 @@ requests; a push to `main` starts nothing. Manual dispatch (Actions â†’ Build â†
 Run workflow) builds and uploads the native folder ZIP
 and its checksum using the frozen SDK release asset. Set the optional
 `release_tag` input to an existing release to publish the ZIP and checksum;
-leave it blank for CI artifacts only. Existing release files are not overwritten.
+leave it blank for CI artifacts only. A release's files come from that workflow
+run, built and attested there; none is attached by hand. The run adds the files
+the release does not have yet and leaves its title and notes as they are. A file
+the release already has is never replaced or removed: the run prints a warning
+that it did not come from this run, and ends green.
 A `PPSA99007.zip` built by the workflow can be checked with
 `gh attestation verify PPSA99007.zip -R blackbearreloaded/ps5-yamagi-quake2`
 (GitHub CLI); this covers releases built by GitHub Actions from now on, not earlier ones.

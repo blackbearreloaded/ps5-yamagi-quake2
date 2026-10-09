@@ -9,7 +9,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 The engine is open source; the original game assets are separate. Do not put
 PAK files, player models, music from the original game, or saves into Git.
 
-Current release ZIPs and FFPFSC images already include the official 3.14 demo,
+Current release ZIPs already include the official 3.14 demo,
 with its original notices. No data preparation is needed to play the demo.
 The steps below are for manual preparation or replacing it with your retail data.
 

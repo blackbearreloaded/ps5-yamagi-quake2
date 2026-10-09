@@ -88,5 +88,22 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
+          # The release must already exist; its title and notes are not touched.
           gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
-          gh release upload "$RELEASE_TAG" dist/PPSA99007.zip dist/PPSA99007.zip.sha256 --repo "$GITHUB_REPOSITORY"
+          TAG=$RELEASE_TAG
+          # A file the release already has is never replaced or removed. Only missing files are added.
+          existing=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          has() { grep -Fxq -- "$1" <<< "$existing"; }
+          kept() { echo "::warning title=Release file not from this run::A release for $TAG already has $1; it was not replaced. It was not published by this run and may have no attestation."; }
+          if has PPSA99007.zip; then
+            kept PPSA99007.zip
+            # This run's checksum file describes this run's ZIP, not the one the release keeps.
+            if has PPSA99007.zip.sha256; then kept PPSA99007.zip.sha256; fi
+            exit 0
+          fi
+          gh release upload "$TAG" dist/PPSA99007.zip --repo "$GITHUB_REPOSITORY"
+          if has PPSA99007.zip.sha256; then
+            kept PPSA99007.zip.sha256
+          else
+            gh release upload "$TAG" dist/PPSA99007.zip.sha256 --repo "$GITHUB_REPOSITORY"
+          fi

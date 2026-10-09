@@ -41,10 +41,9 @@ complete build under `build/ps5-native-fixed/`.
 `make package` adds the hash-verified official demo and original notices to
 `dist/PPSA99007.zip`, with an accompanying SHA-256 file.
 
-GitHub Actions publishes the folder ZIP only. FFPFSC downloads were withdrawn
-after a console startup failure despite passing offline round-trip checks.
-The legacy local `make ffpfsc` target is experimental and is not a supported
-installation method.
+GitHub Actions publishes the folder ZIP only, and the build makes no image.
+FFPFSC downloads were withdrawn after a console startup failure despite passing
+offline round-trip checks.
 
 The SDK bundle includes full graphics/dependency sources and a rebuild guide.
 `sources/game-runtime-source.tar.xz` contains the exact patched runtime and its
