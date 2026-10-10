@@ -100,6 +100,12 @@ sed -i 's@"\$sdk_root/bin/prospero-lld" -T@"\$sdk_root/bin/prospero-lld" -L"\$sd
 
 sdk="$stage/.deps/native/ps5-payload-sdk"
 mkdir -p "$stage/build/native-imports"
+# The boilerplate's compiler wrapper runs PS5_CLANG: ccache, when it is installed.
+if command -v ccache >/dev/null && [[ -z ${PS5_CLANG:-} ]]; then
+	printf '#!/bin/sh\nexec ccache clang-18 "$@"\n' > "$stage/build/ccache-clang18"
+	chmod +x "$stage/build/ccache-clang18"
+	export PS5_CLANG="$stage/build/ccache-clang18"
+fi
 for stub in agc_link_stub agc_driver_link_stub; do
 	PS5_PAYLOAD_SDK="$sdk" sh "$stage/tooling/prospero-clang18" \
 		-std=c11 -O2 -fPIC -ffunction-sections -fdata-sections \
